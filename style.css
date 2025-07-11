@@ -355,6 +355,17 @@ section > h2 {
 /* ==========================================================================
    Flag-Container Style (Version ohne Terminal-Boxen)
    ========================================================================== */
+ img { /* Diese Regel wendet sich an ALLE <img> Tags */
+  max-width: 80%; /* Das Bild wird nie breiter als 80% seines Containers (angepasst) */
+  height: auto;   /* Die Höhe passt sich automatisch an, um das Seitenverhältnis beizubehalten */
+  display: block; /* Zentrierung ermöglichen */
+  margin-left: auto;   /* Zentriert das Bild */
+  margin-right: auto;  /* Zentriert das Bild */
+  border: solid 1px black; /* Rahmen */
+  margin-bottom: 1rem; /* Abstand nach unten */
+  margin-top: 1rem; /* Abstand nach oben */
+  box-shadow: 0 0 1em rgba(0, 0, 0, 0.4); /* Schatten */
+}
 
 .flag-container {
     text-align: center;
@@ -364,7 +375,7 @@ section > h2 {
     border-radius: 5px;
     border: 1px solid #e9ecef;
 }
-
+ 
 .flag-heading {
     text-align: center;
     color: #2c3e50;
